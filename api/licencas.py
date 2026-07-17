@@ -135,6 +135,7 @@ from fastapi import Body
 def login_licenca(
     administrador: str = Body(...),
     chave: str = Body(...),
+    hardware_id: str = Body(None),
     db: Session = Depends(get_db)
 ):
     licenca = db.query(Licenca).filter(
@@ -149,6 +150,16 @@ def login_licenca(
         }
 
     agora = datetime.now()
+
+    if hardware_id:
+        if not licenca.maquina:
+            licenca.maquina = hardware_id
+
+        elif licenca.maquina != hardware_id:
+            return {
+                "ok": False,
+                "mensagem": "Esta licença já está sendo utilizada em outro computador."
+            }
 
     if not licenca.ativa:
         return {
