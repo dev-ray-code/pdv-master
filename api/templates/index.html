@@ -25,7 +25,8 @@
             width:500px;
         }
 
-        input{
+        input,
+        select{
             width:100%;
             padding:10px;
             margin-top:5px;
@@ -74,14 +75,40 @@
 
 <h3>Nova Licença</h3>
 
-<label>Empresa</label>
-<input id="empresa">
+<label>Cliente</label>
+
+<select id="cliente" style="width:100%;padding:10px;margin-top:5px;margin-bottom:15px;">
+</select>
 
 <label>Administrador</label>
 <input id="admin">
 
 <label>Senha da Licença</label>
 <input id="codigo">
+
+<label>Plano</label>
+
+<select id="plano">
+    <option value="MENSAL">Mensal</option>
+    <option value="SEMESTRAL">Semestral</option>
+    <option value="ANUAL" selected>Anual</option>
+</select>
+
+<label>Quantidade de Computadores</label>
+
+<input
+    type="number"
+    id="computadores"
+    value="1"
+    min="1"
+>
+
+<label>Validade</label>
+
+<input
+    type="date"
+    id="validade"
+>
 
 <button onclick="criar()">Criar Licença</button>
 
@@ -108,7 +135,12 @@
 
 <th>Empresa</th>
 <th>Administrador</th>
+<th>Chave</th>
+<th>Plano</th>
+<th>PCs</th>
+<th>Validade</th>
 <th>Status</th>
+<th>Ações</th>
 
 </tr>
 
@@ -121,6 +153,77 @@
 </table>
 
 <hr>
+
+<div id="dashboard" style="
+display:flex;
+gap:15px;
+margin:20px 0;
+flex-wrap:wrap;
+">
+
+<div id="cardClientes" class="card" style="width:180px;text-align:center;">
+    <h3>Clientes</h3>
+    <h1 id="totalClientes">0</h1>
+</div>
+
+<div id="cardLicencas" class="card" style="width:180px;text-align:center;">
+    <h3>Licenças</h3>
+    <h1 id="totalLicencas">0</h1>
+</div>
+
+<div id="cardAtivas" class="card" style="width:180px;text-align:center;">
+    <h3>Ativas</h3>
+    <h1 id="totalAtivas">0</h1>
+</div>
+
+<div id="cardBloqueadas" class="card" style="width:180px;text-align:center;">
+    <h3>Bloqueadas</h3>
+    <h1 id="totalBloqueadas">0</h1>
+</div>
+
+<div id="cardVencidas" class="card" style="width:180px;text-align:center;">
+    <h3>Vencidas</h3>
+    <h1 id="totalVencidas">0</h1>
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Novo Cliente</h3>
+
+<label>Nome</label>
+<input id="nomeCliente">
+
+<label>Empresa</label>
+<input id="empresaCliente">
+
+<label>Telefone</label>
+<input id="telefoneCliente">
+
+<label>Email</label>
+<input id="emailCliente">
+
+<label>Cidade</label>
+<input id="cidadeCliente">
+
+<label>Estado</label>
+<input id="estadoCliente">
+
+<button onclick="cadastrarCliente()">
+    Cadastrar Cliente
+</button>
+
+</div>
+
+<h3>Pesquisar Cliente</h3>
+
+<input
+    type="text"
+    id="pesquisaClientes"
+    placeholder="Pesquisar nome, empresa, cidade ou estado..."
+    onkeyup="filtrarClientes()"
+    style="width:100%;padding:10px;margin-bottom:20px;">
 
 <h2>Clientes Cadastrados</h2>
 
@@ -147,6 +250,32 @@ async function carregarLicencas(){
     const resposta = await fetch("/licencas/listar");
     const dados = await resposta.json();
 
+    document.getElementById("totalLicencas").innerText = dados.length;
+
+    let ativas = 0;
+    let bloqueadas = 0;
+    let vencidas = 0;
+
+    dados.forEach(function(item){
+
+        if(item.status == "ATIVA"){
+            ativas++;
+        }
+
+        if(item.status == "BLOQUEADA"){
+            bloqueadas++;
+        }
+
+        if(item.status == "VENCIDA"){
+            vencidas++;
+        }
+
+    });
+
+    document.getElementById("totalAtivas").innerText = ativas;
+    document.getElementById("totalBloqueadas").innerText = bloqueadas;
+    document.getElementById("totalVencidas").innerText = vencidas;
+
     let tabela = document.getElementById("lista");
     tabela.innerHTML = "";
 
@@ -156,6 +285,10 @@ async function carregarLicencas(){
     <tr>
         <td>${item.empresa}</td>
         <td>${item.administrador}</td>
+        <td><b>${item.chave}</b></td>
+        <td>${item.plano}</td>
+        <td>${item.computadores}</td>
+        <td>${item.validade}</td>
         <td>${item.status}</td>
         <td>
             ${item.status=="ATIVA" ? `
@@ -167,7 +300,9 @@ async function carregarLicencas(){
                     Desbloquear
                 </button>
                 `}
-
+                <button onclick="renovarLicenca('${item.chave}')">
+                    Renovar
+                </button>               
             <button onclick="excluirLicenca('${item.chave}')">
                 Excluir
             </button>
@@ -201,12 +336,18 @@ function filtrarTabela(){
 
 async function criar(){
 
-    let empresa = document.getElementById("empresa").value;
+    let cliente = document.getElementById("cliente").value;
     let admin = document.getElementById("admin").value;
     let codigo = document.getElementById("codigo").value;
+    let plano = document.getElementById("plano").value;
+    let computadores = document.getElementById("computadores").value;
+    let validade = document.getElementById("validade").value;
 
     await fetch(
-        "/licencas/criar?codigo=" + codigo + "&cliente=" + empresa,
+        "/licencas/criar?cliente_id=" + cliente +
+        "&plano=" + plano +
+        "&computadores=" + computadores +
+        "&validade=" + validade,
         {
             method:"POST"
         }
@@ -245,6 +386,28 @@ async function desbloquear(chave){
     carregarLicencas();
 }
 
+async function renovarLicenca(chave){
+
+    let validade = prompt("Informe a nova validade (AAAA-MM-DD):");
+
+    if(!validade){
+        return;
+    }
+
+    let r = await fetch(
+        "/licencas/renovar/" + chave + "?validade=" + validade,
+        {
+            method:"POST"
+        }
+    );
+
+    let dados = await r.json();
+
+    alert(dados.mensagem);
+
+    carregarLicencas();
+}
+
 async function excluirLicenca(chave){
 
     if(!confirm("Deseja excluir esta licença?")){
@@ -263,6 +426,27 @@ async function carregarClientes(){
 
     const resposta = await fetch("/licencas/clientes/listar");
     const clientes = await resposta.json();
+    document.getElementById("totalClientes").innerText = clientes.length;
+    let select = document.getElementById("cliente");
+    select.innerHTML = "";
+
+    clientes.forEach(function(cliente){
+        select.innerHTML += `
+            <option
+                value="${cliente.id}"
+                data-admin="${cliente.nome}">
+                ${cliente.empresa}
+            </option>
+        `;
+    });
+
+    select.onchange = function () {
+        let opcao = this.options[this.selectedIndex];
+        document.getElementById("admin").value =
+            opcao.getAttribute("data-admin");
+    };
+
+    select.dispatchEvent(new Event("change"));
 
     let tabela = document.getElementById("listaClientes");
     tabela.innerHTML = "";
@@ -300,6 +484,56 @@ async function excluirCliente(id){
     });
 
     carregarClientes();
+
+}
+
+async function cadastrarCliente(){
+
+    let nome = document.getElementById("nomeCliente").value;
+    let empresa = document.getElementById("empresaCliente").value;
+    let telefone = document.getElementById("telefoneCliente").value;
+    let email = document.getElementById("emailCliente").value;
+    let cidade = document.getElementById("cidadeCliente").value;
+    let estado = document.getElementById("estadoCliente").value;
+
+    let resposta = await fetch(
+        "/licencas/clientes/criar" +
+        "?nome=" + encodeURIComponent(nome) +
+        "&empresa=" + encodeURIComponent(empresa) +
+        "&telefone=" + encodeURIComponent(telefone) +
+        "&email=" + encodeURIComponent(email) +
+        "&cidade=" + encodeURIComponent(cidade) +
+        "&estado=" + encodeURIComponent(estado),
+        {
+            method: "POST"
+        }
+    );
+
+    let dados = await resposta.json();
+
+    alert(dados.status);
+
+    carregarClientes();
+
+}
+
+function filtrarClientes(){
+
+    let filtro = document.getElementById("pesquisaClientes").value.toUpperCase();
+
+    let linhas = document.querySelectorAll("#listaClientes tr");
+
+    linhas.forEach(function(linha){
+
+        let texto = linha.innerText.toUpperCase();
+
+        if(texto.indexOf(filtro) > -1){
+            linha.style.display = "";
+        }else{
+            linha.style.display = "none";
+        }
+
+    });
 
 }
 

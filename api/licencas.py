@@ -129,6 +129,49 @@ def validar(codigo: str, db: Session = Depends(get_db)):
         "plano": licenca.plano
     }
 
+from fastapi import Body
+
+@router.post("/login")
+def login_licenca(
+    administrador: str = Body(...),
+    chave: str = Body(...),
+    db: Session = Depends(get_db)
+):
+    licenca = db.query(Licenca).filter(
+        Licenca.administrador == administrador,
+        Licenca.chave == chave
+    ).first()
+
+    if not licenca:
+        return {
+            "ok": False,
+            "mensagem": "Usuário ou senha inválidos."
+        }
+
+    agora = datetime.now()
+
+    if not licenca.ativa:
+        return {
+            "ok": False,
+            "mensagem": "Licença bloqueada."
+        }
+
+    if licenca.validade and licenca.validade < agora:
+        return {
+            "ok": False,
+            "mensagem": "Licença vencida."
+        }
+
+    licenca.ultimo_acesso = agora
+    db.commit()
+
+    return {
+        "ok": True,
+        "empresa": licenca.empresa,
+        "administrador": licenca.administrador,
+        "plano": licenca.plano
+    }
+
 @router.post("/bloquear/{codigo}")
 def bloquear(codigo: str, db: Session = Depends(get_db)):
 
