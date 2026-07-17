@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Controle Store</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+
+body{
+    background:#f4f6f9;
+}
+
+.sidebar{
+    width:260px;
+    min-height:100vh;
+    background:#0d6efd;
+    color:white;
+}
+
+.sidebar h3{
+    padding:20px;
+    text-align:center;
+}
+
+.sidebar a{
+    color:white;
+    display:block;
+    text-decoration:none;
+    padding:15px 20px;
+    transition:.3s;
+}
+
+.sidebar a:hover{
+    background:#0b5ed7;
+}
+
+.content{
+    flex:1;
+    padding:30px;
+}
+
+.card-dashboard{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+.card-dashboard h2{
+    font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="d-flex">
+
+<div class="sidebar">
+
+<h3>
+<i class="bi bi-shield-lock"></i>
+Controle Store
+</h3>
+
+<a href="#">
+<i class="bi bi-speedometer2"></i>
+Dashboard
+</a>
+
+<a href="/clientes">
+<i class="bi bi-people"></i>
+Clientes
+</a>
+
+<a href="/licencas">
+<i class="bi bi-key"></i>
+Licenças
+</a>
+
+<a href="#">
+<i class="bi bi-arrow-repeat"></i>
+Atualizações
+</a>
+
+<a href="#">
+<i class="bi bi-gear"></i>
+Configurações
+</a>
+
+</div>
+
+<div class="content">
+
+<h2>Painel Administrativo</h2>
+
+<p>
+Bem-vindo ao Controle Store.
+</p>
+
+<div class="row mt-4">
+
+<div class="col-md-3 mb-4">
+
+    <div class="card card-dashboard bg-primary text-white">
+
+        <div class="card-body">
+
+            <h5>Total de Clientes</h5>
+
+            <h2 id="totalClientes">0</h2>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="col-md-3 mb-4">
+
+    <div class="card card-dashboard bg-success text-white">
+
+        <div class="card-body">
+
+            <h5>Licenças Ativas</h5>
+
+            <h2 id="licencasAtivas">0</h2>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="col-md-3 mb-4">
+
+    <div class="card card-dashboard bg-warning text-dark">
+
+        <div class="card-body">
+
+            <h5>Bloqueadas</h5>
+
+            <h2 id="licencasBloqueadas">0</h2>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="col-md-3 mb-4">
+
+    <div class="card card-dashboard bg-danger text-white">
+
+        <div class="card-body">
+
+            <h5>Vencidas</h5>
+
+            <h2 id="licencasVencidas">0</h2>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+<div class="card card-dashboard mt-4">
+
+    <div class="card-body">
+
+        <h4>Resumo do Sistema</h4>
+
+        <table class="table table-striped table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th>Módulo</th>
+                    <th>Status</th>
+                    <th>Descrição</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+                    <td>Clientes</td>
+                    <td><span class="badge bg-success">Online</span></td>
+                    <td>Gerenciamento de clientes cadastrado.</td>
+                </tr>
+
+                <tr>
+                    <td>Licenças</td>
+                    <td><span class="badge bg-success">Online</span></td>
+                    <td>Controle de licenças ativo.</td>
+                </tr>
+
+                <tr>
+                    <td>Atualizações</td>
+                    <td><span class="badge bg-warning text-dark">Em desenvolvimento</span></td>
+                    <td>Sistema de atualização automática do PDV.</td>
+                </tr>
+
+                <tr>
+                    <td>Servidor</td>
+                    <td><span class="badge bg-success">Online</span></td>
+                    <td>API FastAPI funcionando normalmente.</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+async function carregarDashboard(){
+
+    const respostaClientes = await fetch("/licencas/clientes/listar");
+    const clientes = await respostaClientes.json();
+
+    document.getElementById("totalClientes").innerHTML = clientes.length;
+
+    const respostaLicencas = await fetch("/licencas/listar");
+    const licencas = await respostaLicencas.json();
+
+    let ativas = 0;
+    let bloqueadas = 0;
+
+    licencas.forEach(function(item){
+
+        if(item.status === "ATIVA"){
+            ativas++;
+        }
+
+        if(item.status === "BLOQUEADA"){
+            bloqueadas++;
+        }
+
+    });
+
+    document.getElementById("licencasAtivas").innerHTML = ativas;
+    document.getElementById("licencasBloqueadas").innerHTML = bloqueadas;
+
+    document.getElementById("licencasVencidas").innerHTML = 0;
+
+}
+
+carregarDashboard();
+
+</script>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

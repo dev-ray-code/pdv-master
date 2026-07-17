@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Controle Store</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background:#f4f6f9;
+            margin:40px;
+        }
+
+        h1{
+            color:#0d6efd;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,.1);
+            width:500px;
+        }
+
+        input{
+            width:100%;
+            padding:10px;
+            margin-top:5px;
+            margin-bottom:15px;
+        }
+
+        button{
+            background:#0d6efd;
+            color:white;
+            border:none;
+            padding:10px 20px;
+            border-radius:5px;
+            cursor:pointer;
+            margin-right:10px;
+        }
+
+        table{
+            margin-top:30px;
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        table th,
+        table td{
+            border:1px solid #ddd;
+            padding:10px;
+            text-align:left;
+        }
+
+        table th{
+            background:#0d6efd;
+            color:white;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1>CONTROLE STORE</h1>
+
+<h2>Painel Administrativo</h2>
+
+<div class="card">
+
+<h3>Nova Licença</h3>
+
+<label>Empresa</label>
+<input id="empresa">
+
+<label>Administrador</label>
+<input id="admin">
+
+<label>Senha da Licença</label>
+<input id="codigo">
+
+<button onclick="criar()">Criar Licença</button>
+
+</div>
+
+<h3>Pesquisar Licença</h3>
+
+<input
+    type="text"
+    id="pesquisa"
+    placeholder="Pesquisar empresa, administrador ou status..."
+    onkeyup="filtrarTabela()"
+    style="width:100%;padding:10px;margin-bottom:20px;">
+
+<h3>Licenças Cadastradas</h3>
+
+<table>
+
+
+
+<thead>
+
+<tr>
+
+<th>Empresa</th>
+<th>Administrador</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="lista">
+
+</tbody>
+
+</table>
+
+<hr>
+
+<h2>Clientes Cadastrados</h2>
+
+<table border="1" width="100%">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Empresa</th>
+            <th>Telefone</th>
+            <th>Cidade</th>
+            <th>Estado</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+
+    <tbody id="listaClientes">
+    </tbody>
+</table>
+
+<script>
+
+async function carregarLicencas(){
+
+    const resposta = await fetch("/licencas/listar");
+    const dados = await resposta.json();
+
+    let tabela = document.getElementById("lista");
+    tabela.innerHTML = "";
+
+    dados.forEach(function(item){
+
+    tabela.innerHTML += `
+    <tr>
+        <td>${item.empresa}</td>
+        <td>${item.administrador}</td>
+        <td>${item.status}</td>
+        <td>
+            <button onclick="bloquear('${item.chave}')">
+                Bloquear
+            </button>
+
+            <button onclick="excluirLicenca('${item.chave}')">
+                Excluir
+            </button>
+        </td>
+    </tr>
+    `;
+
+    });
+
+}
+
+function filtrarTabela(){
+
+    let filtro = document.getElementById("pesquisa").value.toUpperCase();
+
+    let linhas = document.querySelectorAll("#lista tr");
+
+    linhas.forEach(function(linha){
+
+        let texto = linha.innerText.toUpperCase();
+
+        if(texto.indexOf(filtro) > -1){
+            linha.style.display = "";
+        }else{
+            linha.style.display = "none";
+        }
+
+    });
+
+}
+
+async function criar(){
+
+    let empresa = document.getElementById("empresa").value;
+    let admin = document.getElementById("admin").value;
+    let codigo = document.getElementById("codigo").value;
+
+    await fetch(
+        "/licencas/criar?codigo=" + codigo + "&cliente=" + empresa,
+        {
+            method:"POST"
+        }
+    );
+
+    alert("Licença criada!");
+
+    carregarLicencas();
+
+}
+
+async function bloquear(chave){
+
+    if(!confirm("Deseja bloquear esta licença?")){
+        return;
+    }
+
+    await fetch("/licencas/bloquear/" + chave, {
+        method: "POST"
+    });
+
+    carregarLicencas();
+
+}
+
+async function excluirLicenca(chave){
+
+    if(!confirm("Deseja excluir esta licença?")){
+        return;
+    }
+
+    await fetch("/licencas/excluir/" + chave, {
+        method:"DELETE"
+    });
+
+    carregarLicencas();
+
+}
+
+async function carregarClientes(){
+
+    const resposta = await fetch("/licencas/clientes/listar");
+    const clientes = await resposta.json();
+
+    let tabela = document.getElementById("listaClientes");
+    tabela.innerHTML = "";
+
+    clientes.forEach(function(cliente){
+
+        tabela.innerHTML += `
+        <tr>
+            <td>${cliente.nome}</td>
+            <td>${cliente.empresa}</td>
+            <td>${cliente.telefone}</td>
+            <td>${cliente.cidade}</td>
+            <td>${cliente.estado}</td>
+            <td>
+                <button onclick="excluirCliente(${cliente.id})">
+                    Excluir
+                </button>
+            </td>
+        </tr>
+        `;
+        
+
+    });
+
+}
+
+async function excluirCliente(id){
+
+    if(!confirm("Deseja excluir este cliente?")){
+        return;
+    }
+
+    await fetch("/licencas/clientes/excluir/" + id, {
+        method: "DELETE"
+    });
+
+    carregarClientes();
+
+}
+
+carregarLicencas();
+carregarClientes();
+
+</script>
+
+</body>
+</html>

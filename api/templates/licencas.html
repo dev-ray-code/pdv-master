@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Controle Store - Licenças</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+
+body{
+    background:#f4f6f9;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+.sidebar{
+    width:260px;
+    min-height:100vh;
+    background:#0d6efd;
+    color:white;
+}
+
+.sidebar h3{
+    text-align:center;
+    padding:20px;
+    font-weight:bold;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:15px 20px;
+}
+
+.sidebar a:hover{
+    background:#0b5ed7;
+}
+
+.content{
+    flex:1;
+    padding:30px;
+}
+
+.card{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+.table td{
+    vertical-align:middle;
+}
+
+.badge{
+    font-size:14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="d-flex">
+
+<div class="sidebar">
+
+<h3>
+
+<i class="bi bi-shield-lock"></i><br>
+
+Controle Store
+
+</h3>
+
+<a href="/dashboard">
+
+<i class="bi bi-speedometer2"></i>
+
+Dashboard
+
+</a>
+
+<a href="/clientes">
+
+<i class="bi bi-people"></i>
+
+Clientes
+
+</a>
+
+<a href="/licencas">
+
+<i class="bi bi-key"></i>
+
+Licenças
+
+</a>
+
+<a href="/atualizacoes">
+
+<i class="bi bi-cloud-arrow-up"></i>
+
+Atualizações
+
+</a>
+
+<a href="#">
+
+<i class="bi bi-gear"></i>
+
+Configurações
+
+</a>
+
+</div>
+
+<div class="content">
+
+<h2>Gerenciamento de Licenças</h2>
+
+<p>
+
+Cadastre, bloqueie, renove e gerencie todas as licenças do Controle Store.
+
+</p>
+
+<div class="row">
+
+<div class="col-md-4">
+
+<div class="card p-3">
+
+<h6>Licenças Ativas</h6>
+
+<h2 id="cardAtivas">0</h2>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card p-3">
+
+<h6>Bloqueadas</h6>
+
+<h2 id="cardBloqueadas">0</h2>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card p-3">
+
+<h6>Total</h6>
+
+<h2 id="cardTotal">0</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card p-4 mt-4">
+
+<h4>Nova Licença</h4>
+
+<div class="row">
+
+<div class="col-md-6">
+
+<label>Cliente</label>
+
+<select id="cliente" class="form-select">
+
+<option value="">Selecione...</option>
+
+</select>
+
+</div>
+
+<div class="col-md-6">
+
+<label>Plano</label>
+
+<select id="plano" class="form-select">
+
+<option value="ANUAL">Anual</option>
+
+<option value="MENSAL">Mensal</option>
+
+<option value="VITALICIO">Vitalício</option>
+
+</select>
+
+</div>
+
+<div class="col-md-6 mt-3">
+
+<label>Computadores Permitidos</label>
+
+<input
+type="number"
+id="computadores"
+class="form-control"
+value="1">
+
+</div>
+
+<div class="col-md-6 mt-3">
+
+<label>Validade</label>
+
+<input
+type="date"
+id="validade"
+class="form-control">
+
+</div>
+
+<div class="col-12 mt-4">
+
+<button
+class="btn btn-primary"
+onclick="criarLicenca()">
+
+<i class="bi bi-plus-circle"></i>
+
+Criar Licença
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card p-4 mt-4">
+
+<h4>Licenças Cadastradas</h4>
+
+<table class="table table-hover table-striped">
+
+<thead class="table-primary">
+
+<tr>
+
+<th>Cliente</th>
+<th>Chave</th>
+<th>Plano</th>
+<th>PCs</th>
+<th>Status</th>
+<th>Validade</th>
+<th width="220">Ações</th>
+
+</tr>
+
+</thead>
+
+<tbody id="listaLicencas">
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function carregarClientes(){
+
+    const resposta = await fetch("/licencas/clientes/listar");
+    const clientes = await resposta.json();
+
+    const combo = document.getElementById("cliente");
+
+    combo.innerHTML = '<option value="">Selecione...</option>';
+
+    clientes.forEach(cliente=>{
+
+        combo.innerHTML += `
+        <option value="${cliente.id}">
+            ${cliente.empresa}
+        </option>
+        `;
+
+    });
+
+}
+
+async function carregarLicencas(){
+
+    const resposta = await fetch("/licencas/listar");
+    const dados = await resposta.json();
+
+    let tabela = document.getElementById("listaLicencas");
+
+    tabela.innerHTML="";
+
+    let ativas=0;
+    let bloqueadas=0;
+
+    dados.forEach(item=>{
+
+        if(item.status=="ATIVA"){
+            ativas++;
+        }else{
+            bloqueadas++;
+        }
+
+        tabela.innerHTML +=`
+
+        <tr>
+
+            <td>${item.empresa}</td>
+
+            <td>${item.chave}</td>
+
+            <td>${item.plano}</td>
+
+            <td>${item.computadores}</td>
+
+            <td>
+
+                <span class="badge bg-${item.status=="ATIVA"?"success":"danger"}">
+
+                    ${item.status}
+
+                </span>
+
+            </td>
+
+            <td>${item.validade}</td>
+
+            <td>
+
+                <button
+                    class="btn btn-warning btn-sm"
+                    onclick="bloquear('${item.chave}')">
+
+                    Bloquear
+
+                </button>
+
+                <button
+                    class="btn btn-success btn-sm"
+                    onclick="renovarLicenca('${item.chave}')">
+
+                    Renovar
+
+                </button>
+
+                <button
+                    class="btn btn-danger btn-sm"
+                    onclick="excluirLicenca('${item.chave}')">
+
+                    Excluir
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+    document.getElementById("cardAtivas").innerText=ativas;
+    document.getElementById("cardBloqueadas").innerText=bloqueadas;
+    document.getElementById("cardTotal").innerText=dados.length;
+
+}
+
+
+
+window.onload = async function () {
+    try {
+        await carregarClientes();
+        await carregarLicencas();
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao carregar os dados.");
+    }
+};
+
+async function criarLicenca(){
+
+    const cliente = document.getElementById("cliente").value;
+    const plano = document.getElementById("plano").value;
+    const computadores = document.getElementById("computadores").value;
+    const validade = document.getElementById("validade").value;
+
+    await fetch(`/licencas/criar?cliente_id=${cliente}&plano=${plano}&computadores=${computadores}&validade=${validade}`,{
+        method:"POST"
+    });
+
+    carregarLicencas();
+}
+
+async function bloquear(codigo){
+
+    await fetch("/licencas/bloquear/" + codigo,{
+        method:"POST"
+    });
+
+    carregarLicencas();
+}
+
+async function excluirLicenca(codigo){
+
+    if(!confirm("Deseja realmente excluir esta licença?")){
+        return;
+    }
+
+    await fetch("/licencas/excluir/" + codigo,{
+        method:"DELETE"
+    });
+
+    carregarLicencas();
+}
+
+async function renovarLicenca(codigo){
+
+    const validade = prompt("Nova validade (AAAA-MM-DD):");
+
+    if(!validade){
+        return;
+    }
+
+    await fetch(`/licencas/renovar/${codigo}?validade=${validade}`,{
+        method:"POST"
+    });
+
+    carregarLicencas();
+
+}
+
+</script>
+
+</body>
+</html>
