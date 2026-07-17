@@ -345,6 +345,7 @@ async function carregarLicencas(){
 
             <td>
 
+                ${item.status=="ATIVA" ? `
                 <button
                     class="btn btn-warning btn-sm"
                     onclick="bloquear('${item.chave}')">
@@ -352,6 +353,17 @@ async function carregarLicencas(){
                     Bloquear
 
                 </button>
+                ` : `
+                <button
+                    class="btn btn-primary btn-sm"
+                    onclick="desbloquear('${item.chave}')">
+
+                    Desbloquear
+
+                </button>
+                `}
+
+               
 
                 <button
                     class="btn btn-success btn-sm"
@@ -412,6 +424,15 @@ async function criarLicenca(){
 async function bloquear(codigo){
 
     await fetch("/licencas/bloquear/" + codigo,{
+        method:"POST"
+    });
+
+    carregarLicencas();
+}
+
+async function desbloquear(codigo){
+
+    await fetch("/licencas/desbloquear/" + codigo,{
         method:"POST"
     });
 
