@@ -150,6 +150,27 @@ def bloquear(codigo: str, db: Session = Depends(get_db)):
         "status": "Licença bloqueada"
     }
 
+@router.post("/desbloquear/{codigo}")
+def desbloquear(codigo: str, db: Session = Depends(get_db)):
+
+    licenca = db.query(Licenca).filter(
+        Licenca.chave == codigo
+    ).first()
+
+    if not licenca:
+        return {
+            "status": "Licença não encontrada"
+        }
+
+    licenca.ativa = True
+    licenca.status = "ATIVA"
+
+    db.commit()
+
+    return {
+        "status": "Licença desbloqueada"
+    }
+
 
 @router.get("/listar")
 def listar_licencas(db: Session = Depends(get_db)):
