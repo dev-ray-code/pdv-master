@@ -430,14 +430,7 @@ async function bloquear(codigo){
     carregarLicencas();
 }
 
-async function desbloquear(codigo){
 
-    await fetch("/licencas/desbloquear/" + codigo,{
-        method:"POST"
-    });
-
-    carregarLicencas();
-}
 
 async function excluirLicenca(codigo){
 

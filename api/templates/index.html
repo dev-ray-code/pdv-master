@@ -158,9 +158,15 @@ async function carregarLicencas(){
         <td>${item.administrador}</td>
         <td>${item.status}</td>
         <td>
-            <button onclick="bloquear('${item.chave}')">
-                Bloquear
-            </button>
+            ${item.status=="ATIVA" ? `
+                <button onclick="bloquear('${item.chave}')">
+                    Bloquear
+                </button>
+                ` : `
+                <button onclick="desbloquear('${item.chave}')">
+                    Desbloquear
+                </button>
+                `}
 
             <button onclick="excluirLicenca('${item.chave}')">
                 Excluir
@@ -224,6 +230,19 @@ async function bloquear(chave){
 
     carregarLicencas();
 
+}
+
+async function desbloquear(chave){
+
+    if(!confirm("Deseja desbloquear esta licença?")){
+        return;
+    }
+
+    await fetch("/licencas/desbloquear/" + chave,{
+        method:"POST"
+    });
+
+    carregarLicencas();
 }
 
 async function excluirLicenca(chave){
