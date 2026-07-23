@@ -178,9 +178,13 @@ def login_licenca(
 
     return {
         "ok": True,
+        "id": licenca.id,
+        "cliente_id": licenca.cliente_id,
         "empresa": licenca.empresa,
         "administrador": licenca.administrador,
-        "plano": licenca.plano
+        "plano": licenca.plano,
+        "status": licenca.status,
+        "validade": licenca.validade.strftime("%Y-%m-%d") if licenca.validade else None
     }
 
 @router.post("/bloquear/{codigo}")
