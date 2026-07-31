@@ -43,6 +43,8 @@ pwd_context = CryptContext(
 
 
 def gerar_hash(senha: str):
+    print("SENHA RECEBIDA:", senha)
+    print("TAMANHO:", len(senha))
     return pwd_context.hash(senha)
 
 
