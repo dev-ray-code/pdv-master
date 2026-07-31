@@ -120,58 +120,54 @@ def login(
     dados: LoginRequest,
     db: Session = Depends(get_db)
 ):
+    try:
+        print("=== LOGIN INICIADO ===")
+        print("Usuário:", dados.usuario)
 
-    print("=== LOGIN INICIADO ===")
-    print("Usuário:", dados.usuario)
+        usuario = db.query(Usuario).filter(
+            Usuario.usuario == dados.usuario
+        ).first()
 
-    usuario = db.query(Usuario).filter(
-        Usuario.usuario == dados.usuario
-    ).first()
+        print("Consulta concluída")
 
-    print("Consulta concluída")
+        if not usuario:
+            raise HTTPException(
+                status_code=401,
+                detail="Usuário não encontrado."
+            )
 
-    if usuario:
-        print("Usuário encontrado")
-    else:
-        print("Usuário NÃO encontrado")
+        print("Verificando senha")
 
-    if not usuario:
-        raise HTTPException(
-            status_code=401,
-            detail="Usuário não encontrado."
+        if not verificar_senha(
+            dados.senha,
+            usuario.senha_hash
+        ):
+            raise HTTPException(
+                status_code=401,
+                detail="Senha inválida."
+            )
+
+        print("Criando token")
+
+        token = criar_token(
+            {
+                "usuario_id": usuario.id,
+                "cliente_id": usuario.cliente_id,
+                "perfil": usuario.perfil
+            }
         )
 
-    print("Verificando senha...")
-
-    if not verificar_senha(
-        dados.senha,
-        usuario.senha_hash
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail="Senha inválida."
-        )
-
-    print("Senha OK")
-    print("Criando token...")
-
-    token = criar_token(
-        {
-            "usuario_id": usuario.id,
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "usuario": usuario.usuario,
             "cliente_id": usuario.cliente_id,
             "perfil": usuario.perfil
         }
-    )
 
-    print("Token criado")
-
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "usuario": usuario.usuario,
-        "cliente_id": usuario.cliente_id,
-        "perfil": usuario.perfil
-    }
+    except Exception as e:
+        print("ERRO LOGIN:", repr(e))
+        raise
 
 
 class AdminInicial(BaseModel):
