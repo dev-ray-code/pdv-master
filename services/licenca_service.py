@@ -69,6 +69,49 @@ class LicencaService:
         return licenca
 
     @staticmethod
+    def validar(db: Session, codigo: str):
+
+        licenca = db.query(Licenca).filter(
+            Licenca.codigo == codigo
+        ).first()
+
+        if not licenca:
+            raise HTTPException(
+                status_code=404,
+                detail="Licença não encontrada."
+            )
+
+        if licenca.status != "ATIVO":
+            raise HTTPException(
+                status_code=403,
+                detail="Licença bloqueada."
+            )
+
+        if (
+            licenca.data_vencimento
+            and licenca.data_vencimento < datetime.utcnow()
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail="Licença vencida."
+            )
+
+        cliente = db.query(Cliente).filter(
+            Cliente.id == licenca.cliente_id
+        ).first()
+
+        return {
+            "valido": True,
+            "cliente_id": cliente.id,
+            "empresa": cliente.empresa,
+            "plano": licenca.plano,
+            "status": licenca.status,
+            "codigo": licenca.codigo,
+            "limite_computadores": licenca.limite_computadores,
+            "limite_usuarios": licenca.limite_usuarios
+        }
+
+    @staticmethod
     def atualizar(db: Session, licenca_id: int, dados):
 
         licenca = LicencaService.buscar(db, licenca_id)

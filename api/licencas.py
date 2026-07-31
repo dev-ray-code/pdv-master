@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Body
 from sqlalchemy.orm import Session
 
 from database.db import get_db
@@ -55,6 +55,17 @@ def criar_licenca(
     return LicencaService.criar(
         db,
         dados
+    )
+
+
+@router.post("/validar")
+def validar_licenca(
+    dados: dict = Body(...),
+    db: Session = Depends(get_db)
+):
+    return LicencaService.validar(
+        db,
+        dados.get("codigo")
     )
 
 
