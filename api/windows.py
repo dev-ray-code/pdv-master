@@ -54,6 +54,7 @@ def ativar_pdv(
         mensagem=resultado["mensagem"],
         cliente_id=cliente.id,
         licenca_id=licenca.id,
+        codigo=licenca.codigo,
         empresa=cliente.empresa,
         plano=licenca.plano,
         status=licenca.status,

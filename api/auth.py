@@ -182,53 +182,58 @@ def criar_admin(
     dados: AdminInicial,
     db: Session = Depends(get_db)
 ):
+    try:
 
-    existe_usuario = db.query(Usuario).filter(
-        Usuario.usuario == dados.usuario
-    ).first()
+        existe_usuario = db.query(Usuario).filter(
+            Usuario.usuario == dados.usuario
+        ).first()
 
-    if existe_usuario:
-        raise HTTPException(
-            status_code=400,
-            detail="Usuário já cadastrado."
+        if existe_usuario:
+            raise HTTPException(
+                status_code=400,
+                detail="Usuário já cadastrado."
+            )
+
+        existe_email = db.query(Usuario).filter(
+            Usuario.email == dados.email
+        ).first()
+
+        if existe_email:
+            raise HTTPException(
+                status_code=400,
+                detail="E-mail já cadastrado."
+            )
+
+        cliente = Cliente(
+            nome=dados.nome,
+            empresa="Minha Empresa",
+            email=dados.email,
+            plano="ANUAL",
+            status="ATIVO"
         )
 
-    existe_email = db.query(Usuario).filter(
-        Usuario.email == dados.email
-    ).first()
+        db.add(cliente)
+        db.commit()
+        db.refresh(cliente)
 
-    if existe_email:
-        raise HTTPException(
-            status_code=400,
-            detail="E-mail já cadastrado."
+        novo_usuario = Usuario(
+            cliente_id=cliente.id,
+            usuario=dados.usuario,
+            nome=dados.nome,
+            email=dados.email,
+            senha_hash=gerar_hash(dados.senha),
+            perfil="ADMIN",
+            ativo=True
         )
 
-    cliente = Cliente(
-        nome=dados.nome,
-        empresa="Minha Empresa",
-        email=dados.email,
-        plano="ANUAL",
-        status="ATIVO"
-    )
+        db.add(novo_usuario)
+        db.commit()
 
-    db.add(cliente)
-    db.commit()
-    db.refresh(cliente)
+        return {
+            "status": "ok",
+            "mensagem": "Administrador criado com sucesso."
+        }
 
-    novo_usuario = Usuario(
-        cliente_id=cliente.id,
-        usuario=dados.usuario,
-        nome=dados.nome,
-        email=dados.email,
-        senha_hash=gerar_hash(dados.senha),
-        perfil="ADMIN",
-        ativo=True
-    )
-
-    db.add(novo_usuario)
-    db.commit()
-
-    return {
-        "status": "ok",
-        "mensagem": "Administrador criado com sucesso."
-    }
+    except Exception as e:
+        print("ERRO CRIAR ADMIN:", repr(e))
+        raise
