@@ -56,15 +56,13 @@ class ClienteService:
             cnpj=dados.cnpj,
             telefone=dados.telefone,
             email=dados.email,
-            endereco=dados.endereco,
             cidade=dados.cidade,
             estado=dados.estado,
-            cep=dados.cep,
             plano=dados.plano,
             status=dados.status,
             validade=dados.validade,
-            limite_computadores=dados.limite_computadores,
-            limite_usuarios=dados.limite_usuarios
+            max_dispositivos=dados.limite_computadores,
+            max_usuarios=dados.limite_usuarios
         )
 
         db.add(cliente)
