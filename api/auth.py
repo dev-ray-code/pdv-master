@@ -121,15 +121,27 @@ def login(
     db: Session = Depends(get_db)
 ):
 
+    print("=== LOGIN INICIADO ===")
+    print("Usuário:", dados.usuario)
+
     usuario = db.query(Usuario).filter(
         Usuario.usuario == dados.usuario
     ).first()
+
+    print("Consulta concluída")
+
+    if usuario:
+        print("Usuário encontrado")
+    else:
+        print("Usuário NÃO encontrado")
 
     if not usuario:
         raise HTTPException(
             status_code=401,
             detail="Usuário não encontrado."
         )
+
+    print("Verificando senha...")
 
     if not verificar_senha(
         dados.senha,
@@ -140,6 +152,9 @@ def login(
             detail="Senha inválida."
         )
 
+    print("Senha OK")
+    print("Criando token...")
+
     token = criar_token(
         {
             "usuario_id": usuario.id,
@@ -147,6 +162,8 @@ def login(
             "perfil": usuario.perfil
         }
     )
+
+    print("Token criado")
 
     return {
         "access_token": token,
