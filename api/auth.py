@@ -235,5 +235,12 @@ def criar_admin(
         }
 
     except Exception as e:
-        print("ERRO CRIAR ADMIN:", repr(e))
+        import traceback
+
+        db.rollback()
+
+        print("=" * 80)
+        traceback.print_exc()
+        print("=" * 80)
+
         raise
