@@ -3,7 +3,16 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
 from database.db import criar_banco
+
 from api.licencas import router as licencas_router
+
+from api.clientes import router as clientes_router
+from api.dispositivos import router as dispositivos_router
+from api.dashboard import router as dashboard_router
+from api.mobile import router as mobile_router
+from api.windows import router as windows_router
+from api.auth import router as auth_router
+from api.usuarios import router as usuarios_router
 
 app = FastAPI(
     title="PDV Store Server",
@@ -11,6 +20,13 @@ app = FastAPI(
 )
 
 app.include_router(licencas_router)
+app.include_router(clientes_router)
+app.include_router(dispositivos_router)
+app.include_router(dashboard_router)
+app.include_router(mobile_router)
+app.include_router(windows_router)
+app.include_router(auth_router)
+app.include_router(usuarios_router)
 
 templates = Jinja2Templates(directory="api/templates")
 
