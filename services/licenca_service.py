@@ -72,7 +72,7 @@ class LicencaService:
     def validar(db: Session, codigo: str):
 
         licenca = db.query(Licenca).filter(
-            Licenca.codigo == codigo
+        Licenca.codigo == codigo
         ).first()
 
         if not licenca:
@@ -81,7 +81,7 @@ class LicencaService:
                 detail="Licença não encontrada."
             )
 
-        if licenca.status != "ATIVO":
+        if licenca.status != "ATIVA":
             raise HTTPException(
                 status_code=403,
                 detail="Licença bloqueada."
