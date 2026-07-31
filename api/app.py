@@ -37,6 +37,19 @@ app.mount("/static", StaticFiles(directory="api/static"), name="static")
 def startup():
     criar_banco()
 
+from fastapi.responses import PlainTextResponse
+
+@app.exception_handler(Exception)
+async def erro_global(request, exc):
+    import traceback
+
+    print("========== ERRO ==========")
+    traceback.print_exc()
+
+    return PlainTextResponse(
+        "Erro interno",
+        status_code=500
+    )
 
 @app.get("/")
 def inicio(request: Request):
