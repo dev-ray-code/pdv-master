@@ -114,11 +114,6 @@ class Cliente(Base):
 
     empresa = Column(String(200))
 
-    usuario = Column(
-        String(100),
-        unique=True
-    )
-
     telefone = Column(String(50))
 
     email = Column(String(200))
