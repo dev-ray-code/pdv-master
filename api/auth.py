@@ -51,10 +51,14 @@ def gerar_hash(senha: str):
     return pwd_context.hash(senha)
 
 
-def verificar_senha(
-    senha: str,
-    hash_salvo: str
-):
+def verificar_senha(senha: str, hash_salvo: str):
+
+    print("================================")
+    print("SENHA RECEBIDA:", senha)
+    print("TIPO:", type(senha))
+    print("TAMANHO:", len(senha))
+    print("================================")
+
     return pwd_context.verify(
         senha,
         hash_salvo
