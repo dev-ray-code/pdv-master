@@ -7,7 +7,7 @@ class ClienteBase(BaseModel):
     empresa: str
     nome: str
 
-    usuario: str
+    
 
     cnpj: Optional[str] = None
     telefone: Optional[str] = None
