@@ -6,6 +6,9 @@ from datetime import datetime
 class ClienteBase(BaseModel):
     empresa: str
     nome: str
+
+    usuario: str
+
     cnpj: Optional[str] = None
     telefone: Optional[str] = None
     email: EmailStr
@@ -30,6 +33,9 @@ class ClienteCreate(ClienteBase):
 class ClienteUpdate(BaseModel):
     empresa: Optional[str] = None
     nome: Optional[str] = None
+
+    usuario: Optional[str] = None
+
     cnpj: Optional[str] = None
     telefone: Optional[str] = None
     email: Optional[EmailStr] = None

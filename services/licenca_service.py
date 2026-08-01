@@ -2,8 +2,10 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from datetime import datetime
 import secrets
+import random
+from services.auth_service import gerar_hash
 
-from database.models import Licenca, Cliente
+from database.models import Licenca, Cliente, Usuario
 
 
 class LicencaService:
@@ -66,7 +68,34 @@ class LicencaService:
         db.commit()
         db.refresh(licenca)
 
-        return licenca
+        # Gera senha de 6 dígitos
+        senha = f"{random.randint(100000, 999999)}"
+
+        # Cria usuário automaticamente
+        usuario = Usuario(
+            cliente_id=cliente.id,
+            usuario=cliente.usuario,
+            nome=cliente.nome,
+            email=cliente.email,
+            senha_hash=gerar_hash(senha),
+            perfil="ADMIN",
+            ativo=True
+        )
+
+        db.add(usuario)
+        db.commit()
+
+        return {
+            "licenca_id": licenca.id,
+            "codigo": licenca.codigo,
+            "usuario": cliente.usuario,
+            "senha": senha,
+            "empresa": cliente.empresa,
+            "status": licenca.status,
+            "plano": licenca.plano
+        }
+
+        
 
     @staticmethod
     def validar(db: Session, codigo: str):

@@ -38,6 +38,16 @@ class ClienteService:
                 detail="E-mail já cadastrado."
             )
 
+        existe_usuario = db.query(Cliente).filter(
+            Cliente.usuario == dados.usuario
+        ).first()
+
+        if existe_usuario:
+            raise HTTPException(
+                status_code=400,
+                detail="Usuário já cadastrado."
+            )
+
         if dados.cnpj:
 
             existe_cnpj = db.query(Cliente).filter(
@@ -53,6 +63,9 @@ class ClienteService:
         cliente = Cliente(
             empresa=dados.empresa,
             nome=dados.nome,
+
+            usuario=dados.usuario,
+
             cnpj=dados.cnpj,
             telefone=dados.telefone,
             email=dados.email,

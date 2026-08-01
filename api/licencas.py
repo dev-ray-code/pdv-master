@@ -45,7 +45,6 @@ def buscar_licenca(
 
 @router.post(
     "/",
-    response_model=LicencaResponse,
     status_code=status.HTTP_201_CREATED
 )
 def criar_licenca(
