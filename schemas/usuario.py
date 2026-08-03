@@ -8,8 +8,6 @@ class UsuarioBase(BaseModel):
 
     usuario: str = Field(..., min_length=3, max_length=100)
 
-    nome: str
-
     perfil: str = "ADMIN"
 
     ativo: bool = True
@@ -21,7 +19,6 @@ class UsuarioCreate(UsuarioBase):
 
 class UsuarioUpdate(BaseModel):
     usuario: Optional[str] = None
-    nome: Optional[str] = None
     senha: Optional[str] = None
     perfil: Optional[str] = None
     ativo: Optional[bool] = None
