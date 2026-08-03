@@ -44,7 +44,6 @@ class UsuarioService:
         usuario = Usuario(
             cliente_id=dados.cliente_id,
             usuario=dados.usuario,
-            nome=dados.nome,
             senha_hash=gerar_hash(dados.senha),
             perfil=dados.perfil,
             ativo=dados.ativo
