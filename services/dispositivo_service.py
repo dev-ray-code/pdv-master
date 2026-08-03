@@ -6,8 +6,11 @@ from sqlalchemy.orm import Session
 from database.models import (
     Cliente,
     Dispositivo,
-    Licenca
+    Licenca,
+    Usuario
 )
+
+from api.auth import verificar_senha
 
 
 class DispositivoService:
@@ -36,8 +39,25 @@ class DispositivoService:
     @staticmethod
     def conectar(db: Session, dados):
 
+        usuario = db.query(Usuario).filter(
+            Usuario.usuario == dados.usuario,
+            Usuario.ativo == True
+        ).first()
+
+        if not usuario:
+            raise HTTPException(
+                status_code=401,
+                detail="Usuário não encontrado."
+            )
+
+        if not verificar_senha(dados.senha, usuario.senha_hash):
+            raise HTTPException(
+                status_code=401,
+                detail="Senha inválida."
+            )
+
         licenca = db.query(Licenca).filter(
-            Licenca.codigo == dados.codigo_licenca
+            Licenca.cliente_id == usuario.cliente_id
         ).first()
 
         if not licenca:
@@ -53,13 +73,13 @@ class DispositivoService:
             )
 
         if (
-            licenca.data_vencimento
+            licenca.validade
             and
-            licenca.data_vencimento < datetime.utcnow()
+            licenca.validade < datetime.utcnow().date()
         ):
             raise HTTPException(
                 status_code=403,
-                detail="Licença expirada."
+                detail="Licença vencida."
             )
 
         dispositivo = db.query(Dispositivo).filter(
@@ -69,11 +89,9 @@ class DispositivoService:
         if dispositivo:
 
             dispositivo.nome_computador = dados.nome_computador
+            dispositivo.tipo = dados.tipo
             dispositivo.sistema_operacional = dados.sistema_operacional
             dispositivo.versao_pdv = dados.versao_pdv
-            dispositivo.ip = dados.ip
-            dispositivo.mac = dados.mac
-            dispositivo.serial = dados.serial
             dispositivo.ultimo_acesso = datetime.utcnow()
             dispositivo.status = "ATIVO"
 
@@ -82,9 +100,12 @@ class DispositivoService:
 
             return {
                 "status": "AUTORIZADO",
-                "mensagem": "Dispositivo já cadastrado.",
+                "mensagem": "Dispositivo autorizado.",
                 "cliente_id": licenca.cliente_id,
-                "licenca_id": licenca.id
+                "licenca_id": licenca.id,
+                "empresa": licenca.cliente.nome,
+                "plano": licenca.plano,
+                "validade": licenca.validade,
             }
 
         quantidade = db.query(Dispositivo).filter(
@@ -106,11 +127,7 @@ class DispositivoService:
             tipo=dados.tipo,
             sistema_operacional=dados.sistema_operacional,
             versao_pdv=dados.versao_pdv,
-            ip=dados.ip,
-            mac=dados.mac,
-            serial=dados.serial,
             status="ATIVO",
-            primeira_ativacao=datetime.utcnow(),
             ultimo_acesso=datetime.utcnow()
         )
 
@@ -120,9 +137,12 @@ class DispositivoService:
 
         return {
             "status": "AUTORIZADO",
-            "mensagem": "Dispositivo registrado com sucesso.",
+            "mensagem": "Dispositivo registrado.",
             "cliente_id": licenca.cliente_id,
-            "licenca_id": licenca.id
+            "licenca_id": licenca.id,
+            "empresa": licenca.cliente.nome,
+            "plano": licenca.plano,
+            "validade": licenca.validade,
         }
 
     @staticmethod

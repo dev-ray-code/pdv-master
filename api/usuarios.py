@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from typing import List
+
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from database.db import get_db
@@ -11,37 +13,55 @@ from schemas.usuario import (
 
 from services.usuario_service import UsuarioService
 
-
 router = APIRouter(
     prefix="/usuarios",
     tags=["Usuários"]
 )
 
 
-@router.get("/", response_model=list[UsuarioResponse])
+@router.get(
+    "/",
+    response_model=List[UsuarioResponse]
+)
 def listar_usuarios(
     db: Session = Depends(get_db)
 ):
     return UsuarioService.listar(db)
 
 
-@router.get("/{usuario_id}", response_model=UsuarioResponse)
+@router.get(
+    "/{usuario_id}",
+    response_model=UsuarioResponse
+)
 def buscar_usuario(
     usuario_id: int,
     db: Session = Depends(get_db)
 ):
-    return UsuarioService.buscar(db, usuario_id)
+    return UsuarioService.buscar(
+        db,
+        usuario_id
+    )
 
 
-@router.post("/", response_model=UsuarioResponse)
+@router.post(
+    "/",
+    response_model=UsuarioResponse,
+    status_code=status.HTTP_201_CREATED
+)
 def criar_usuario(
     dados: UsuarioCreate,
     db: Session = Depends(get_db)
 ):
-    return UsuarioService.criar(db, dados)
+    return UsuarioService.criar(
+        db,
+        dados
+    )
 
 
-@router.put("/{usuario_id}", response_model=UsuarioResponse)
+@router.put(
+    "/{usuario_id}",
+    response_model=UsuarioResponse
+)
 def atualizar_usuario(
     usuario_id: int,
     dados: UsuarioUpdate,

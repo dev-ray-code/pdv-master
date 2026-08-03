@@ -1,22 +1,18 @@
-from pydantic import BaseModel
+from datetime import date, datetime
 from typing import Optional
-from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class LicencaBase(BaseModel):
+
     cliente_id: int
 
-    plano: str
+    plano: str = "ANUAL"
 
-    codigo: Optional[str] = None
-
-    status: str = "ATIVA"
+    validade: Optional[date] = None
 
     limite_computadores: int = 1
-    limite_usuarios: int = 1
-
-    data_ativacao: Optional[datetime] = None
-    data_vencimento: Optional[datetime] = None
 
 
 class LicencaCreate(LicencaBase):
@@ -24,18 +20,32 @@ class LicencaCreate(LicencaBase):
 
 
 class LicencaUpdate(BaseModel):
+
     plano: Optional[str] = None
+
     status: Optional[str] = None
 
+    validade: Optional[date] = None
+
     limite_computadores: Optional[int] = None
-    limite_usuarios: Optional[int] = None
-
-    data_ativacao: Optional[datetime] = None
-    data_vencimento: Optional[datetime] = None
 
 
-class LicencaResponse(LicencaBase):
+class LicencaResponse(BaseModel):
+
     id: int
+
+    cliente_id: int
+
+    chave: str
+
+    plano: str
+
+    status: str
+
+    validade: Optional[date]
+
+    limite_computadores: int
+
     criado_em: datetime
 
     class Config:

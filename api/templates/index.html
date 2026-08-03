@@ -1,546 +1,125 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Controle Store</title>
 
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-        body{
-            font-family: Arial;
-            background:#f4f6f9;
-            margin:40px;
-        }
+<title>PDV Store Master</title>
 
-        h1{
-            color:#0d6efd;
-        }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-        .card{
-            background:white;
-            padding:20px;
-            border-radius:10px;
-            box-shadow:0 0 10px rgba(0,0,0,.1);
-            width:500px;
-        }
+<style>
 
-        input,
-        select{
-            width:100%;
-            padding:10px;
-            margin-top:5px;
-            margin-bottom:15px;
-        }
+body{
+    background:#f4f6f9;
+}
 
-        button{
-            background:#0d6efd;
-            color:white;
-            border:none;
-            padding:10px 20px;
-            border-radius:5px;
-            cursor:pointer;
-            margin-right:10px;
-        }
+.sidebar{
+    width:260px;
+    min-height:100vh;
+    background:#0d6efd;
+    color:white;
+}
 
-        table{
-            margin-top:30px;
-            width:100%;
-            border-collapse:collapse;
-        }
+.sidebar h3{
+    padding:20px;
+    text-align:center;
+}
 
-        table th,
-        table td{
-            border:1px solid #ddd;
-            padding:10px;
-            text-align:left;
-        }
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:15px 20px;
+}
 
-        table th{
-            background:#0d6efd;
-            color:white;
-        }
+.sidebar a:hover{
+    background:#0b5ed7;
+}
 
-    </style>
+.content{
+    flex:1;
+    padding:40px;
+}
+
+.card{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+</style>
 
 </head>
 
 <body>
 
-<h1>CONTROLE STORE</h1>
+<div class="d-flex">
 
-<h2>Painel Administrativo</h2>
+<div class="sidebar">
 
-<div class="card">
+<h3>
+<i class="bi bi-server"></i><br>
+PDV STORE MASTER
+</h3>
 
-<h3>Nova Licença</h3>
+<a href="/dashboard">
+<i class="bi bi-speedometer2"></i>
+Dashboard
+</a>
 
-<label>Cliente</label>
+<a href="/clientes">
+<i class="bi bi-people"></i>
+Clientes
+</a>
 
-<select id="cliente" style="width:100%;padding:10px;margin-top:5px;margin-bottom:15px;">
-</select>
-
-<label>Administrador</label>
-<input id="admin">
-
-<label>Senha da Licença</label>
-<input id="codigo">
-
-<label>Plano</label>
-
-<select id="plano">
-    <option value="MENSAL">Mensal</option>
-    <option value="SEMESTRAL">Semestral</option>
-    <option value="ANUAL" selected>Anual</option>
-</select>
-
-<label>Quantidade de Computadores</label>
-
-<input
-    type="number"
-    id="computadores"
-    value="1"
-    min="1"
->
-
-<label>Validade</label>
-
-<input
-    type="date"
-    id="validade"
->
-
-<button onclick="criar()">Criar Licença</button>
+<a href="/licencas">
+<i class="bi bi-key"></i>
+Licenças
+</a>
 
 </div>
 
-<h3>Pesquisar Licença</h3>
+<div class="content">
 
-<input
-    type="text"
-    id="pesquisa"
-    placeholder="Pesquisar empresa, administrador ou status..."
-    onkeyup="filtrarTabela()"
-    style="width:100%;padding:10px;margin-bottom:20px;">
+<div class="card p-5">
 
-<h3>Licenças Cadastradas</h3>
-
-<table>
-
-
-
-<thead>
-
-<tr>
-
-<th>Empresa</th>
-<th>Administrador</th>
-<th>Chave</th>
-<th>Plano</th>
-<th>PCs</th>
-<th>Validade</th>
-<th>Status</th>
-<th>Ações</th>
-
-</tr>
-
-</thead>
-
-<tbody id="lista">
-
-</tbody>
-
-</table>
+<h2>Bem-vindo ao PDV Store Master</h2>
 
 <hr>
 
-<div id="dashboard" style="
-display:flex;
-gap:15px;
-margin:20px 0;
-flex-wrap:wrap;
-">
+<p>
 
-<div id="cardClientes" class="card" style="width:180px;text-align:center;">
-    <h3>Clientes</h3>
-    <h1 id="totalClientes">0</h1>
-</div>
+Servidor central de gerenciamento das licenças do PDV.
 
-<div id="cardLicencas" class="card" style="width:180px;text-align:center;">
-    <h3>Licenças</h3>
-    <h1 id="totalLicencas">0</h1>
-</div>
+</p>
 
-<div id="cardAtivas" class="card" style="width:180px;text-align:center;">
-    <h3>Ativas</h3>
-    <h1 id="totalAtivas">0</h1>
-</div>
+<p>
 
-<div id="cardBloqueadas" class="card" style="width:180px;text-align:center;">
-    <h3>Bloqueadas</h3>
-    <h1 id="totalBloqueadas">0</h1>
-</div>
+Fluxo do sistema:
 
-<div id="cardVencidas" class="card" style="width:180px;text-align:center;">
-    <h3>Vencidas</h3>
-    <h1 id="totalVencidas">0</h1>
+</p>
+
+<ol>
+
+<li>Cadastrar Cliente</li>
+
+<li>Criar Licença</li>
+
+<li>Gerar chave automaticamente</li>
+
+<li>Cliente ativa no Windows ou Mobile</li>
+
+</ol>
+
 </div>
 
 </div>
 
-<div class="card">
-
-<h3>Novo Cliente</h3>
-
-<label>Nome</label>
-<input id="nomeCliente">
-
-<label>Empresa</label>
-<input id="empresaCliente">
-
-<label>Telefone</label>
-<input id="telefoneCliente">
-
-<label>Email</label>
-<input id="emailCliente">
-
-<label>Cidade</label>
-<input id="cidadeCliente">
-
-<label>Estado</label>
-<input id="estadoCliente">
-
-<button onclick="cadastrarCliente()">
-    Cadastrar Cliente
-</button>
-
 </div>
-
-<h3>Pesquisar Cliente</h3>
-
-<input
-    type="text"
-    id="pesquisaClientes"
-    placeholder="Pesquisar nome, empresa, cidade ou estado..."
-    onkeyup="filtrarClientes()"
-    style="width:100%;padding:10px;margin-bottom:20px;">
-
-<h2>Clientes Cadastrados</h2>
-
-<table border="1" width="100%">
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Empresa</th>
-            <th>Telefone</th>
-            <th>Cidade</th>
-            <th>Estado</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-
-    <tbody id="listaClientes">
-    </tbody>
-</table>
-
-<script>
-
-async function carregarLicencas(){
-
-    const resposta = await fetch("/licencas/listar");
-    const dados = await resposta.json();
-
-    document.getElementById("totalLicencas").innerText = dados.length;
-
-    let ativas = 0;
-    let bloqueadas = 0;
-    let vencidas = 0;
-
-    dados.forEach(function(item){
-
-        if(item.status == "ATIVA"){
-            ativas++;
-        }
-
-        if(item.status == "BLOQUEADA"){
-            bloqueadas++;
-        }
-
-        if(item.status == "VENCIDA"){
-            vencidas++;
-        }
-
-    });
-
-    document.getElementById("totalAtivas").innerText = ativas;
-    document.getElementById("totalBloqueadas").innerText = bloqueadas;
-    document.getElementById("totalVencidas").innerText = vencidas;
-
-    let tabela = document.getElementById("lista");
-    tabela.innerHTML = "";
-
-    dados.forEach(function(item){
-
-    tabela.innerHTML += `
-    <tr>
-        <td>${item.empresa}</td>
-        <td>${item.administrador}</td>
-        <td><b>${item.chave}</b></td>
-        <td>${item.plano}</td>
-        <td>${item.computadores}</td>
-        <td>${item.validade}</td>
-        <td>${item.status}</td>
-        <td>
-            ${item.status=="ATIVA" ? `
-                <button onclick="bloquear('${item.chave}')">
-                    Bloquear
-                </button>
-                ` : `
-                <button onclick="desbloquear('${item.chave}')">
-                    Desbloquear
-                </button>
-                `}
-                <button onclick="renovarLicenca('${item.chave}')">
-                    Renovar
-                </button>               
-            <button onclick="excluirLicenca('${item.chave}')">
-                Excluir
-            </button>
-        </td>
-    </tr>
-    `;
-
-    });
-
-}
-
-function filtrarTabela(){
-
-    let filtro = document.getElementById("pesquisa").value.toUpperCase();
-
-    let linhas = document.querySelectorAll("#lista tr");
-
-    linhas.forEach(function(linha){
-
-        let texto = linha.innerText.toUpperCase();
-
-        if(texto.indexOf(filtro) > -1){
-            linha.style.display = "";
-        }else{
-            linha.style.display = "none";
-        }
-
-    });
-
-}
-
-async function criar(){
-
-    let cliente = document.getElementById("cliente").value;
-    let admin = document.getElementById("admin").value;
-    let codigo = document.getElementById("codigo").value;
-    let plano = document.getElementById("plano").value;
-    let computadores = document.getElementById("computadores").value;
-    let validade = document.getElementById("validade").value;
-
-    await fetch(
-        "/licencas/criar?cliente_id=" + cliente +
-        "&plano=" + plano +
-        "&computadores=" + computadores +
-        "&validade=" + validade,
-        {
-            method:"POST"
-        }
-    );
-
-    alert("Licença criada!");
-
-    carregarLicencas();
-
-}
-
-async function bloquear(chave){
-
-    if(!confirm("Deseja bloquear esta licença?")){
-        return;
-    }
-
-    await fetch("/licencas/bloquear/" + chave, {
-        method: "POST"
-    });
-
-    carregarLicencas();
-
-}
-
-async function desbloquear(chave){
-
-    if(!confirm("Deseja desbloquear esta licença?")){
-        return;
-    }
-
-    await fetch("/licencas/desbloquear/" + chave,{
-        method:"POST"
-    });
-
-    carregarLicencas();
-}
-
-async function renovarLicenca(chave){
-
-    let validade = prompt("Informe a nova validade (AAAA-MM-DD):");
-
-    if(!validade){
-        return;
-    }
-
-    let r = await fetch(
-        "/licencas/renovar/" + chave + "?validade=" + validade,
-        {
-            method:"POST"
-        }
-    );
-
-    let dados = await r.json();
-
-    alert(dados.mensagem);
-
-    carregarLicencas();
-}
-
-async function excluirLicenca(chave){
-
-    if(!confirm("Deseja excluir esta licença?")){
-        return;
-    }
-
-    await fetch("/licencas/excluir/" + chave, {
-        method:"DELETE"
-    });
-
-    carregarLicencas();
-
-}
-
-async function carregarClientes(){
-
-    const resposta = await fetch("/licencas/clientes/listar");
-    const clientes = await resposta.json();
-    document.getElementById("totalClientes").innerText = clientes.length;
-    let select = document.getElementById("cliente");
-    select.innerHTML = "";
-
-    clientes.forEach(function(cliente){
-        select.innerHTML += `
-            <option
-                value="${cliente.id}"
-                data-admin="${cliente.nome}">
-                ${cliente.empresa}
-            </option>
-        `;
-    });
-
-    select.onchange = function () {
-        let opcao = this.options[this.selectedIndex];
-        document.getElementById("admin").value =
-            opcao.getAttribute("data-admin");
-    };
-
-    select.dispatchEvent(new Event("change"));
-
-    let tabela = document.getElementById("listaClientes");
-    tabela.innerHTML = "";
-
-    clientes.forEach(function(cliente){
-
-        tabela.innerHTML += `
-        <tr>
-            <td>${cliente.nome}</td>
-            <td>${cliente.empresa}</td>
-            <td>${cliente.telefone}</td>
-            <td>${cliente.cidade}</td>
-            <td>${cliente.estado}</td>
-            <td>
-                <button onclick="excluirCliente(${cliente.id})">
-                    Excluir
-                </button>
-            </td>
-        </tr>
-        `;
-        
-
-    });
-
-}
-
-async function excluirCliente(id){
-
-    if(!confirm("Deseja excluir este cliente?")){
-        return;
-    }
-
-    await fetch("/licencas/clientes/excluir/" + id, {
-        method: "DELETE"
-    });
-
-    carregarClientes();
-
-}
-
-async function cadastrarCliente(){
-
-    let nome = document.getElementById("nomeCliente").value;
-    let empresa = document.getElementById("empresaCliente").value;
-    let telefone = document.getElementById("telefoneCliente").value;
-    let email = document.getElementById("emailCliente").value;
-    let cidade = document.getElementById("cidadeCliente").value;
-    let estado = document.getElementById("estadoCliente").value;
-
-    let resposta = await fetch(
-        "/licencas/clientes/criar" +
-        "?nome=" + encodeURIComponent(nome) +
-        "&empresa=" + encodeURIComponent(empresa) +
-        "&telefone=" + encodeURIComponent(telefone) +
-        "&email=" + encodeURIComponent(email) +
-        "&cidade=" + encodeURIComponent(cidade) +
-        "&estado=" + encodeURIComponent(estado),
-        {
-            method: "POST"
-        }
-    );
-
-    let dados = await resposta.json();
-
-    alert(dados.status);
-
-    carregarClientes();
-
-}
-
-function filtrarClientes(){
-
-    let filtro = document.getElementById("pesquisaClientes").value.toUpperCase();
-
-    let linhas = document.querySelectorAll("#listaClientes tr");
-
-    linhas.forEach(function(linha){
-
-        let texto = linha.innerText.toUpperCase();
-
-        if(texto.indexOf(filtro) > -1){
-            linha.style.display = "";
-        }else{
-            linha.style.display = "none";
-        }
-
-    });
-
-}
-
-carregarLicencas();
-carregarClientes();
-
-</script>
 
 </body>
+
 </html>

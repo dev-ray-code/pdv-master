@@ -1,14 +1,17 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
 
 class UsuarioBase(BaseModel):
     cliente_id: int
+
     usuario: str = Field(..., min_length=3, max_length=100)
+
     nome: str
-    email: EmailStr
+
     perfil: str = "ADMIN"
+
     ativo: bool = True
 
 
@@ -19,7 +22,6 @@ class UsuarioCreate(UsuarioBase):
 class UsuarioUpdate(BaseModel):
     usuario: Optional[str] = None
     nome: Optional[str] = None
-    email: Optional[EmailStr] = None
     senha: Optional[str] = None
     perfil: Optional[str] = None
     ativo: Optional[bool] = None

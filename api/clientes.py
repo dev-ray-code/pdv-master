@@ -74,9 +74,7 @@ def atualizar_cliente(
     )
 
 
-@router.delete(
-    "/{cliente_id}"
-)
+@router.delete("/{cliente_id}")
 def excluir_cliente(
     cliente_id: int,
     db: Session = Depends(get_db)

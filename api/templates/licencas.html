@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Controle Store - Licenças</title>
+<title>PDV Store Master - Licenças</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -15,7 +15,6 @@
 
 body{
     background:#f4f6f9;
-    font-family:Arial,Helvetica,sans-serif;
 }
 
 .sidebar{
@@ -28,7 +27,6 @@ body{
 .sidebar h3{
     text-align:center;
     padding:20px;
-    font-weight:bold;
 }
 
 .sidebar a{
@@ -53,14 +51,6 @@ body{
     box-shadow:0 5px 15px rgba(0,0,0,.08);
 }
 
-.table td{
-    vertical-align:middle;
-}
-
-.badge{
-    font-size:14px;
-}
-
 </style>
 
 </head>
@@ -73,50 +63,30 @@ body{
 
 <h3>
 
-<i class="bi bi-shield-lock"></i><br>
+<i class="bi bi-server"></i><br>
 
-Controle Store
+PDV STORE MASTER
 
 </h3>
 
+<a href="/">
+<i class="bi bi-house"></i>
+Início
+</a>
+
 <a href="/dashboard">
-
 <i class="bi bi-speedometer2"></i>
-
 Dashboard
-
 </a>
 
 <a href="/clientes">
-
 <i class="bi bi-people"></i>
-
 Clientes
-
 </a>
 
 <a href="/licencas">
-
 <i class="bi bi-key"></i>
-
 Licenças
-
-</a>
-
-<a href="/atualizacoes">
-
-<i class="bi bi-cloud-arrow-up"></i>
-
-Atualizações
-
-</a>
-
-<a href="#">
-
-<i class="bi bi-gear"></i>
-
-Configurações
-
 </a>
 
 </div>
@@ -125,19 +95,25 @@ Configurações
 
 <h2>Gerenciamento de Licenças</h2>
 
-<p>
-
-Cadastre, bloqueie, renove e gerencie todas as licenças do Controle Store.
-
-</p>
-
 <div class="row">
 
 <div class="col-md-4">
 
 <div class="card p-3">
 
-<h6>Licenças Ativas</h6>
+<h6>Total</h6>
+
+<h2 id="cardTotal">0</h2>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card p-3">
+
+<h6>Ativas</h6>
 
 <h2 id="cardAtivas">0</h2>
 
@@ -157,18 +133,6 @@ Cadastre, bloqueie, renove e gerencie todas as licenças do Controle Store.
 
 </div>
 
-<div class="col-md-4">
-
-<div class="card p-3">
-
-<h6>Total</h6>
-
-<h2 id="cardTotal">0</h2>
-
-</div>
-
-</div>
-
 </div>
 
 <div class="card p-4 mt-4">
@@ -181,37 +145,36 @@ Cadastre, bloqueie, renove e gerencie todas as licenças do Controle Store.
 
 <label>Cliente</label>
 
-<select id="cliente" class="form-select">
-
-<option value="">Selecione...</option>
+<select
+id="cliente"
+class="form-select">
 
 </select>
 
 </div>
 
-<div class="col-md-6">
+<div class="col-md-3">
 
 <label>Plano</label>
 
-<select id="plano" class="form-select">
+<select
+id="plano"
+class="form-select">
 
-<option value="ANUAL">Anual</option>
-
-<option value="MENSAL">Mensal</option>
-
-<option value="VITALICIO">Vitalício</option>
+<option value="ANUAL">ANUAL</option>
+<option value="MENSAL">MENSAL</option>
 
 </select>
 
 </div>
 
-<div class="col-md-6 mt-3">
+<div class="col-md-3">
 
-<label>Computadores Permitidos</label>
+<label>Computadores</label>
 
 <input
+id="limite"
 type="number"
-id="computadores"
 class="form-control"
 value="1">
 
@@ -222,13 +185,13 @@ value="1">
 <label>Validade</label>
 
 <input
-type="date"
 id="validade"
+type="date"
 class="form-control">
 
 </div>
 
-<div class="col-12 mt-4">
+<div class="col-md-6 mt-3 d-flex align-items-end">
 
 <button
 class="btn btn-primary"
@@ -248,21 +211,33 @@ Criar Licença
 
 <div class="card p-4 mt-4">
 
-<h4>Licenças Cadastradas</h4>
+<div class="row">
 
-<table class="table table-hover table-striped">
+<div class="col-md-5">
+
+<input
+id="pesquisa"
+class="form-control"
+placeholder="Pesquisar licença..."
+onkeyup="filtrar()">
+
+</div>
+
+</div>
+
+<table class="table table-hover mt-4">
 
 <thead class="table-primary">
 
 <tr>
 
+<th>ID</th>
 <th>Cliente</th>
-<th>Chave</th>
 <th>Plano</th>
-<th>PCs</th>
 <th>Status</th>
 <th>Validade</th>
-<th width="220">Ações</th>
+<th>PCs</th>
+<th width="230">Ações</th>
 
 </tr>
 
@@ -280,12 +255,13 @@ Criar Licença
 
 async function carregarClientes(){
 
-    const resposta = await fetch("/licencas/clientes/listar");
+    const resposta = await fetch("/clientes/");
+
     const clientes = await resposta.json();
 
     const combo = document.getElementById("cliente");
 
-    combo.innerHTML = '<option value="">Selecione...</option>';
+    combo.innerHTML = "";
 
     clientes.forEach(cliente=>{
 
@@ -301,17 +277,21 @@ async function carregarClientes(){
 
 async function carregarLicencas(){
 
-    const resposta = await fetch("/licencas/listar");
-    const dados = await resposta.json();
+    const resposta = await fetch("/licencas/");
+
+    const licencas = await resposta.json();
 
     let tabela = document.getElementById("listaLicencas");
 
     tabela.innerHTML="";
 
+    let total=0;
     let ativas=0;
     let bloqueadas=0;
 
-    dados.forEach(item=>{
+    licencas.forEach(item=>{
+
+        total++;
 
         if(item.status=="ATIVA"){
             ativas++;
@@ -319,17 +299,15 @@ async function carregarLicencas(){
             bloqueadas++;
         }
 
-        tabela.innerHTML +=`
+        tabela.innerHTML += `
 
         <tr>
 
-            <td>${item.empresa}</td>
+            <td>${item.id}</td>
 
-            <td>${item.chave}</td>
+            <td>${item.cliente_id}</td>
 
             <td>${item.plano}</td>
-
-            <td>${item.computadores}</td>
 
             <td>
 
@@ -341,43 +319,33 @@ async function carregarLicencas(){
 
             </td>
 
-            <td>${item.validade}</td>
+            <td>${item.data_vencimento ?? ""}</td>
+
+            <td>${item.limite_computadores}</td>
 
             <td>
 
-                ${item.status=="ATIVA" ? `
                 <button
-                    class="btn btn-warning btn-sm"
-                    onclick="bloquear('${item.chave}')">
+                class="btn btn-sm btn-secondary"
+                onclick="copiar(${item.id})">
 
-                    Bloquear
-
-                </button>
-                ` : `
-                <button
-                    class="btn btn-primary btn-sm"
-                    onclick="desbloquear('${item.chave}')">
-
-                    Desbloquear
-
-                </button>
-                `}
-
-               
-
-                <button
-                    class="btn btn-success btn-sm"
-                    onclick="renovarLicenca('${item.chave}')">
-
-                    Renovar
+                Copiar
 
                 </button>
 
                 <button
-                    class="btn btn-danger btn-sm"
-                    onclick="excluirLicenca('${item.chave}')">
+                class="btn btn-sm btn-warning"
+                onclick="editar(${item.id})">
 
-                    Excluir
+                Editar
+
+                </button>
+
+                <button
+                class="btn btn-sm btn-danger"
+                onclick="excluirLicenca(${item.id})">
+
+                Excluir
 
                 </button>
 
@@ -389,79 +357,142 @@ async function carregarLicencas(){
 
     });
 
+    document.getElementById("cardTotal").innerText=total;
     document.getElementById("cardAtivas").innerText=ativas;
     document.getElementById("cardBloqueadas").innerText=bloqueadas;
-    document.getElementById("cardTotal").innerText=dados.length;
 
 }
-
-
-
-window.onload = async function () {
-    try {
-        await carregarClientes();
-        await carregarLicencas();
-    } catch (e) {
-        console.error(e);
-        alert("Erro ao carregar os dados.");
-    }
-};
 
 async function criarLicenca(){
 
-    const cliente = document.getElementById("cliente").value;
+    const cliente_id = document.getElementById("cliente").value;
+
     const plano = document.getElementById("plano").value;
-    const computadores = document.getElementById("computadores").value;
+
+    const limite_computadores = parseInt(
+        document.getElementById("limite").value
+    );
+
     const validade = document.getElementById("validade").value;
 
-    await fetch(`/licencas/criar?cliente_id=${cliente}&plano=${plano}&computadores=${computadores}&validade=${validade}`,{
-        method:"POST"
+    const resposta = await fetch("/licencas/",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+            cliente_id,
+            plano,
+            validade,
+            limite_computadores
+
+        })
+
     });
 
-    carregarLicencas();
-}
+    if(!resposta.ok){
 
-async function bloquear(codigo){
+        alert("Erro ao criar licença.");
 
-    await fetch("/licencas/bloquear/" + codigo,{
-        method:"POST"
-    });
-
-    carregarLicencas();
-}
-
-
-
-async function excluirLicenca(codigo){
-
-    if(!confirm("Deseja realmente excluir esta licença?")){
         return;
+
     }
 
-    await fetch("/licencas/excluir/" + codigo,{
+    const dados = await resposta.json();
+
+    alert(
+`Licença criada com sucesso!
+
+Usuário:
+${dados.usuario}
+
+Chave:
+${dados.chave}`
+    );
+
+    carregarLicencas();
+
+}
+
+async function excluirLicenca(id){
+
+    if(!confirm("Deseja excluir esta licença?")){
+
+        return;
+
+    }
+
+    await fetch("/licencas/"+id,{
+
         method:"DELETE"
-    });
 
-    carregarLicencas();
-}
-
-async function renovarLicenca(codigo){
-
-    const validade = prompt("Nova validade (AAAA-MM-DD):");
-
-    if(!validade){
-        return;
-    }
-
-    await fetch(`/licencas/renovar/${codigo}?validade=${validade}`,{
-        method:"POST"
     });
 
     carregarLicencas();
 
 }
+
+function copiar(id){
+
+    const linha=[...document.querySelectorAll("#listaLicencas tr")]
+
+    .find(l=>l.cells[0].innerText==id);
+
+    if(!linha)return;
+
+    navigator.clipboard.writeText(
+
+        linha.cells[2].innerText
+
+    );
+
+    alert("Chave copiada.");
+
+}
+
+function editar(id){
+
+    alert("A renovação e bloqueio serão implementados no próximo passo.");
+
+}
+
+function filtrar(){
+
+    const filtro = document
+        .getElementById("pesquisa")
+        .value
+        .toUpperCase();
+
+    const linhas = document.querySelectorAll("#listaLicencas tr");
+
+    linhas.forEach(function(linha){
+
+        if(
+            linha.innerText.toUpperCase().indexOf(filtro)>-1
+        ){
+            linha.style.display="";
+        }else{
+            linha.style.display="none";
+        }
+
+    });
+
+}
+
+window.onload = async function(){
+
+    await carregarClientes();
+
+    await carregarLicencas();
+
+};
 
 </script>
 
 </body>
+
 </html>

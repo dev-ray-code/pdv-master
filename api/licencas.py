@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, status, Body
+from fastapi import APIRouter, Depends, Body, status
 from sqlalchemy.orm import Session
 
 from database.db import get_db
@@ -23,9 +23,7 @@ router = APIRouter(
     "/",
     response_model=List[LicencaResponse]
 )
-def listar_licencas(
-    db: Session = Depends(get_db)
-):
+def listar(db: Session = Depends(get_db)):
     return LicencaService.listar(db)
 
 
@@ -33,7 +31,7 @@ def listar_licencas(
     "/{licenca_id}",
     response_model=LicencaResponse
 )
-def buscar_licenca(
+def buscar(
     licenca_id: int,
     db: Session = Depends(get_db)
 ):
@@ -47,7 +45,7 @@ def buscar_licenca(
     "/",
     status_code=status.HTTP_201_CREATED
 )
-def criar_licenca(
+def criar(
     dados: LicencaCreate,
     db: Session = Depends(get_db)
 ):
@@ -58,13 +56,13 @@ def criar_licenca(
 
 
 @router.post("/validar")
-def validar_licenca(
+def validar(
     dados: dict = Body(...),
     db: Session = Depends(get_db)
 ):
     return LicencaService.validar(
         db,
-        dados.get("codigo")
+        dados["codigo"]
     )
 
 
@@ -72,7 +70,7 @@ def validar_licenca(
     "/{licenca_id}",
     response_model=LicencaResponse
 )
-def atualizar_licenca(
+def atualizar(
     licenca_id: int,
     dados: LicencaUpdate,
     db: Session = Depends(get_db)
@@ -84,10 +82,8 @@ def atualizar_licenca(
     )
 
 
-@router.delete(
-    "/{licenca_id}"
-)
-def excluir_licenca(
+@router.delete("/{licenca_id}")
+def excluir(
     licenca_id: int,
     db: Session = Depends(get_db)
 ):

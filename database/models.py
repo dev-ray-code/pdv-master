@@ -9,11 +9,44 @@ from sqlalchemy import (
 )
 
 from sqlalchemy.orm import declarative_base, relationship
-
 from datetime import datetime
 
-
 Base = declarative_base()
+
+
+# ==========================================================
+# CLIENTES
+# ==========================================================
+
+class Cliente(Base):
+    __tablename__ = "clientes"
+
+    id = Column(Integer, primary_key=True)
+
+    empresa = Column(String(200), nullable=False)
+
+    nome = Column(String(200), nullable=False)
+
+    telefone = Column(String(50))
+
+    endereco = Column(String(300))
+
+    criado_em = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    licencas = relationship(
+        "Licenca",
+        back_populates="cliente",
+        cascade="all, delete-orphan"
+    )
+
+    dispositivos = relationship(
+        "Dispositivo",
+        back_populates="cliente",
+        cascade="all, delete-orphan"
+    )
 
 
 # ==========================================================
@@ -27,10 +60,11 @@ class Licenca(Base):
 
     cliente_id = Column(
         Integer,
-        ForeignKey("clientes.id")
+        ForeignKey("clientes.id"),
+        nullable=False
     )
 
-    codigo = Column(
+    chave = Column(
         String(120),
         unique=True,
         nullable=False
@@ -46,21 +80,11 @@ class Licenca(Base):
         default="ATIVA"
     )
 
-    data_ativacao = Column(
-        DateTime,
-        default=datetime.utcnow
-    )
-
-    data_vencimento = Column(DateTime)
+    validade = Column(Date)
 
     limite_computadores = Column(
         Integer,
         default=1
-    )
-
-    limite_usuarios = Column(
-        Integer,
-        default=5
     )
 
     criado_em = Column(
@@ -81,106 +105,6 @@ class Licenca(Base):
 
 
 # ==========================================================
-# ATUALIZAÇÕES
-# ==========================================================
-
-class Atualizacao(Base):
-    __tablename__ = "atualizacoes"
-
-    id = Column(Integer, primary_key=True)
-
-    versao = Column(String(30))
-
-    descricao = Column(String(500))
-
-    arquivo = Column(String(300))
-
-    criado_em = Column(
-        DateTime,
-        default=datetime.utcnow
-    )
-
-
-# ==========================================================
-# CLIENTES
-# ==========================================================
-
-class Cliente(Base):
-    __tablename__ = "clientes"
-
-    id = Column(Integer, primary_key=True)
-
-    nome = Column(String(200))
-
-    empresa = Column(String(200))
-
-    telefone = Column(String(50))
-
-    email = Column(String(200))
-
-    cidade = Column(String(100))
-
-    estado = Column(String(50))
-
-    proprietario = Column(String(200))
-
-    cnpj = Column(String(30))
-
-    plano = Column(
-        String(50),
-        default="ANUAL"
-    )
-
-    status = Column(
-        String(30),
-        default="ATIVO"
-    )
-
-    validade = Column(Date)
-
-    max_dispositivos = Column(
-        Integer,
-        default=1
-    )
-
-    max_usuarios = Column(
-        Integer,
-        default=5
-    )
-
-    token_api = Column(String(255))
-
-    ultimo_acesso = Column(DateTime)
-
-    atualizado_em = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
-    )
-
-    criado_em = Column(
-        DateTime,
-        default=datetime.utcnow
-    )
-
-    licencas = relationship(
-        "Licenca",
-        back_populates="cliente",
-        cascade="all, delete-orphan"
-    )
-
-    usuarios = relationship(
-        "Usuario",
-        cascade="all, delete-orphan"
-    )
-
-    dispositivos = relationship(
-        "Dispositivo",
-        cascade="all, delete-orphan"
-    )
-
-
-# ==========================================================
 # DISPOSITIVOS
 # ==========================================================
 
@@ -191,12 +115,14 @@ class Dispositivo(Base):
 
     cliente_id = Column(
         Integer,
-        ForeignKey("clientes.id")
+        ForeignKey("clientes.id"),
+        nullable=False
     )
 
     licenca_id = Column(
         Integer,
-        ForeignKey("licencas.id")
+        ForeignKey("licencas.id"),
+        nullable=False
     )
 
     machine_id = Column(
@@ -207,28 +133,15 @@ class Dispositivo(Base):
 
     nome_computador = Column(String(200))
 
-    tipo = Column(String(30))          # WINDOWS / ANDROID / IOS
+    tipo = Column(String(30))
 
     sistema_operacional = Column(String(100))
 
     versao_pdv = Column(String(50))
 
-    ip = Column(String(100))
-
-    mac = Column(String(100))
-
-    serial = Column(String(200))
-
-    token = Column(String(255))
-
     status = Column(
         String(30),
         default="ATIVO"
-    )
-
-    primeira_ativacao = Column(
-        DateTime,
-        default=datetime.utcnow
     )
 
     ultimo_acesso = Column(
@@ -258,28 +171,24 @@ class Usuario(Base):
 
     cliente_id = Column(
         Integer,
-        ForeignKey("clientes.id")
+        ForeignKey("clientes.id"),
+        nullable=False
     )
 
     usuario = Column(
         String(100),
-        unique=True
+        unique=True,
+        nullable=False
     )
 
-    cliente = relationship("Cliente")
-
-    nome = Column(String(200))
-
-    email = Column(
-        String(200),
-        unique=True
+    senha_hash = Column(
+        String(255),
+        nullable=False
     )
-
-    senha_hash = Column(String(255))
 
     perfil = Column(
         String(50),
-        default="OPERADOR"
+        default="ADMIN"
     )
 
     ativo = Column(
@@ -288,37 +197,6 @@ class Usuario(Base):
     )
 
     ultimo_login = Column(DateTime)
-
-    criado_em = Column(
-        DateTime,
-        default=datetime.utcnow
-    )
-
-
-# ==========================================================
-# LOGS
-# ==========================================================
-
-class LogSistema(Base):
-    __tablename__ = "logs"
-
-    id = Column(Integer, primary_key=True)
-
-    cliente_id = Column(
-        Integer,
-        ForeignKey("clientes.id")
-    )
-
-    usuario_id = Column(
-        Integer,
-        ForeignKey("usuarios.id")
-    )
-
-    acao = Column(String(255))
-
-    ip = Column(String(100))
-
-    detalhes = Column(String(1000))
 
     criado_em = Column(
         DateTime,
