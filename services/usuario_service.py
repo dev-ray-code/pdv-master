@@ -14,7 +14,10 @@ class UsuarioService:
         ).all()
 
     @staticmethod
-    def buscar(db: Session, usuario_id: int):
+    def buscar(
+        db: Session,
+        usuario_id: int
+    ):
 
         usuario = db.query(Usuario).filter(
             Usuario.id == usuario_id
@@ -29,7 +32,14 @@ class UsuarioService:
         return usuario
 
     @staticmethod
-    def criar(db: Session, dados):
+    def criar(
+        db: Session,
+        dados
+    ):
+
+        # ==================================================
+        # VERIFICAR SE O USUÁRIO JÁ EXISTE
+        # ==================================================
 
         existe = db.query(Usuario).filter(
             Usuario.usuario == dados.usuario
@@ -41,16 +51,30 @@ class UsuarioService:
                 detail="Usuário já existe."
             )
 
+        # ==================================================
+        # CRIAR USUÁRIO
+        # ==================================================
+
         usuario = Usuario(
+
             cliente_id=dados.cliente_id,
+
             usuario=dados.usuario,
-            senha_hash=gerar_hash(dados.senha),
+
+            senha_hash=gerar_hash(
+                dados.senha
+            ),
+
             perfil=dados.perfil,
+
             ativo=dados.ativo
+
         )
 
         db.add(usuario)
+
         db.commit()
+
         db.refresh(usuario)
 
         return usuario
@@ -67,24 +91,54 @@ class UsuarioService:
             usuario_id
         )
 
+        # ==================================================
+        # ATUALIZAR USUÁRIO
+        # ==================================================
+
         if dados.usuario is not None:
+
+            existe = db.query(Usuario).filter(
+                Usuario.usuario == dados.usuario,
+                Usuario.id != usuario_id
+            ).first()
+
+            if existe:
+
+                raise HTTPException(
+                    status_code=400,
+                    detail="Usuário já existe."
+                )
+
             usuario.usuario = dados.usuario
 
-        if dados.nome is not None:
-            usuario.nome = dados.nome
+        # ==================================================
+        # ATUALIZAR PERFIL
+        # ==================================================
 
         if dados.perfil is not None:
+
             usuario.perfil = dados.perfil
 
+        # ==================================================
+        # ATIVAR / DESATIVAR
+        # ==================================================
+
         if dados.ativo is not None:
+
             usuario.ativo = dados.ativo
 
+        # ==================================================
+        # ALTERAR SENHA
+        # ==================================================
+
         if dados.senha:
+
             usuario.senha_hash = gerar_hash(
                 dados.senha
             )
 
         db.commit()
+
         db.refresh(usuario)
 
         return usuario
@@ -101,9 +155,13 @@ class UsuarioService:
         )
 
         db.delete(usuario)
+
         db.commit()
 
         return {
+
             "status": "ok",
+
             "mensagem": "Usuário removido."
+
         }

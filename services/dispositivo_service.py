@@ -50,7 +50,10 @@ class DispositivoService:
                 detail="Usuário não encontrado."
             )
 
-        if not verificar_senha(dados.senha, usuario.senha_hash):
+        if not verificar_senha(
+            dados.senha,
+            usuario.senha_hash
+        ):
             raise HTTPException(
                 status_code=401,
                 detail="Senha inválida."
@@ -99,7 +102,7 @@ class DispositivoService:
             db.refresh(dispositivo)
 
             return {
-                "status": "AUTORIZADO",
+                "status": licenca.status,
                 "mensagem": "Dispositivo autorizado.",
                 "cliente_id": licenca.cliente_id,
                 "licenca_id": licenca.id,
@@ -136,7 +139,7 @@ class DispositivoService:
         db.refresh(novo)
 
         return {
-            "status": "AUTORIZADO",
+            "status": licenca.status,
             "mensagem": "Dispositivo registrado.",
             "cliente_id": licenca.cliente_id,
             "licenca_id": licenca.id,

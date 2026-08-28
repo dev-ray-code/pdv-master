@@ -1,13 +1,20 @@
 from datetime import datetime
 import random
+import secrets
+import string
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from database.models import Cliente, Licenca
+from database.models import Cliente, Licenca, Usuario
+from services.auth_service import gerar_hash
 
 
 class LicencaService:
+
+    # ==========================================================
+    # GERAR CHAVE DA LICENÇA
+    # ==========================================================
 
     @staticmethod
     def gerar_chave():
@@ -16,14 +23,86 @@ class LicencaService:
 
             chave = (
                 "PDV-"
-                + "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=4))
+                + "".join(
+                    random.choices(
+                        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
+                        k=4
+                    )
+                )
                 + "-"
-                + "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=4))
+                + "".join(
+                    random.choices(
+                        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
+                        k=4
+                    )
+                )
                 + "-"
-                + "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=4))
+                + "".join(
+                    random.choices(
+                        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
+                        k=4
+                    )
+                )
             )
 
             return chave
+
+    # ==========================================================
+    # GERAR USUÁRIO
+    # ==========================================================
+
+    @staticmethod
+    def gerar_usuario(empresa: str):
+
+        base = "".join(
+            caractere.lower()
+            for caractere in empresa
+            if caractere.isalnum()
+        )
+
+        if not base:
+            base = "cliente"
+
+        base = base[:30]
+
+        usuario = base
+        contador = 1
+
+        while True:
+
+            existe = None
+
+            # Essa função será usada dentro do criar(),
+            # portanto a verificação final será feita lá.
+
+            if existe is None:
+                return usuario
+
+            usuario = f"{base}{contador}"
+
+            contador += 1
+
+    # ==========================================================
+    # GERAR SENHA
+    # ==========================================================
+
+    @staticmethod
+    def gerar_senha():
+
+        caracteres = (
+            string.ascii_uppercase
+            + string.ascii_lowercase
+            + string.digits
+        )
+
+        return "".join(
+            secrets.choice(caracteres)
+            for _ in range(10)
+        )
+
+    # ==========================================================
+    # LISTAR
+    # ==========================================================
 
     @staticmethod
     def listar(db: Session):
@@ -52,9 +131,17 @@ class LicencaService:
 
                 "cliente_id": licenca.cliente_id,
 
-                "empresa": cliente.empresa,
+                "empresa": (
+                    cliente.empresa
+                    if cliente
+                    else ""
+                ),
 
-                "usuario": cliente.nome,
+                "usuario": (
+                    cliente.nome
+                    if cliente
+                    else ""
+                ),
 
                 "chave": licenca.chave,
 
@@ -64,7 +151,8 @@ class LicencaService:
 
                 "validade": licenca.validade,
 
-                "limite_computadores": licenca.limite_computadores,
+                "limite_computadores":
+                    licenca.limite_computadores,
 
                 "criado_em": licenca.criado_em
 
@@ -72,12 +160,21 @@ class LicencaService:
 
         return resultado
 
+    # ==========================================================
+    # BUSCAR
+    # ==========================================================
+
     @staticmethod
-    def buscar(db: Session, licenca_id: int):
+    def buscar(
+        db: Session,
+        licenca_id: int
+    ):
 
         licenca = (
             db.query(Licenca)
-            .filter(Licenca.id == licenca_id)
+            .filter(
+                Licenca.id == licenca_id
+            )
             .first()
         )
 
@@ -90,8 +187,15 @@ class LicencaService:
 
         return licenca
 
+    # ==========================================================
+    # CRIAR LICENÇA
+    # ==========================================================
+
     @staticmethod
-    def criar(db: Session, dados):
+    def criar(
+        db: Session,
+        dados
+    ):
 
         cliente = (
             db.query(Cliente)
@@ -108,6 +212,10 @@ class LicencaService:
                 detail="Cliente não encontrado."
             )
 
+        # ------------------------------------------------------
+        # GERAR CHAVE ÚNICA
+        # ------------------------------------------------------
+
         chave = LicencaService.gerar_chave()
 
         while (
@@ -119,6 +227,10 @@ class LicencaService:
         ):
 
             chave = LicencaService.gerar_chave()
+
+        # ------------------------------------------------------
+        # CRIAR LICENÇA
+        # ------------------------------------------------------
 
         nova = Licenca(
 
@@ -132,21 +244,96 @@ class LicencaService:
 
             validade=dados.validade,
 
-            limite_computadores=dados.limite_computadores
+            limite_computadores=
+                dados.limite_computadores
 
         )
 
         db.add(nova)
 
+        db.flush()
+
+        # ------------------------------------------------------
+        # GERAR LOGIN
+        # ------------------------------------------------------
+
+        base_usuario = "".join(
+            caractere.lower()
+            for caractere in cliente.empresa
+            if caractere.isalnum()
+        )
+
+        if not base_usuario:
+
+            base_usuario = "cliente"
+
+        base_usuario = base_usuario[:30]
+
+        usuario_login = base_usuario
+
+        contador = 1
+
+        while (
+            db.query(Usuario)
+            .filter(
+                Usuario.usuario == usuario_login
+            )
+            .first()
+        ):
+
+            usuario_login = (
+                f"{base_usuario}{contador}"
+            )
+
+            contador += 1
+
+        # ------------------------------------------------------
+        # GERAR SENHA
+        # ------------------------------------------------------
+
+        senha = LicencaService.gerar_senha()
+
+        # ------------------------------------------------------
+        # CRIAR USUÁRIO DO CLIENTE
+        # ------------------------------------------------------
+
+        novo_usuario = Usuario(
+
+            cliente_id=cliente.id,
+
+            usuario=usuario_login,
+
+            senha_hash=gerar_hash(senha),
+
+            perfil="ADMIN",
+
+            ativo=True
+
+        )
+
+        db.add(novo_usuario)
+
         db.commit()
 
         db.refresh(nova)
 
+        db.refresh(novo_usuario)
+
+        # ------------------------------------------------------
+        # RETORNAR DADOS PARA O ADMINISTRADOR
+        # ------------------------------------------------------
+
         return {
+
+            "id": nova.id,
+
+            "cliente_id": cliente.id,
 
             "empresa": cliente.empresa,
 
-            "usuario": cliente.nome,
+            "usuario": usuario_login,
+
+            "senha": senha,
 
             "chave": nova.chave,
 
@@ -154,29 +341,56 @@ class LicencaService:
 
             "plano": nova.plano,
 
-            "validade": nova.validade
+            "validade": nova.validade,
+
+            "limite_computadores":
+                nova.limite_computadores,
+
+            "criado_em": nova.criado_em
 
         }
 
+    # ==========================================================
+    # VALIDAR LICENÇA
+    # ==========================================================
+
     @staticmethod
-    def validar(db: Session, chave: str):
+    def validar(
+        db: Session,
+        chave: str
+    ):
 
         licenca = (
             db.query(Licenca)
-            .filter(Licenca.chave == chave)
+            .filter(
+                Licenca.chave == chave
+            )
             .first()
         )
 
         if not licenca:
+
             raise HTTPException(
                 status_code=404,
                 detail="Licença não encontrada."
             )
 
         if licenca.status != "ATIVA":
+
             raise HTTPException(
                 status_code=403,
                 detail="Licença bloqueada."
+            )
+
+        if (
+            licenca.validade
+            and
+            licenca.validade < datetime.utcnow().date()
+        ):
+
+            raise HTTPException(
+                status_code=403,
+                detail="Licença vencida."
             )
 
         cliente = (
@@ -186,6 +400,13 @@ class LicencaService:
             )
             .first()
         )
+
+        if not cliente:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Cliente não encontrado."
+            )
 
         return {
 
@@ -205,12 +426,21 @@ class LicencaService:
 
             "validade": licenca.validade,
 
-            "limite_computadores": licenca.limite_computadores
+            "limite_computadores":
+                licenca.limite_computadores
 
         }
 
+    # ==========================================================
+    # ATUALIZAR
+    # ==========================================================
+
     @staticmethod
-    def atualizar(db: Session, licenca_id: int, dados):
+    def atualizar(
+        db: Session,
+        licenca_id: int,
+        dados
+    ):
 
         licenca = LicencaService.buscar(
             db,
@@ -233,8 +463,15 @@ class LicencaService:
 
         return licenca
 
+    # ==========================================================
+    # EXCLUIR
+    # ==========================================================
+
     @staticmethod
-    def excluir(db: Session, licenca_id: int):
+    def excluir(
+        db: Session,
+        licenca_id: int
+    ):
 
         licenca = LicencaService.buscar(
             db,
@@ -252,5 +489,3 @@ class LicencaService:
             "mensagem": "Licença removida."
 
         }
-
-    
