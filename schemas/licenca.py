@@ -1,8 +1,12 @@
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
+
+# ==========================================================
+# LICENÇA BASE
+# ==========================================================
 
 class LicencaBase(BaseModel):
 
@@ -15,9 +19,17 @@ class LicencaBase(BaseModel):
     limite_computadores: int = 1
 
 
+# ==========================================================
+# CRIAR LICENÇA
+# ==========================================================
+
 class LicencaCreate(LicencaBase):
     pass
 
+
+# ==========================================================
+# ATUALIZAR LICENÇA
+# ==========================================================
 
 class LicencaUpdate(BaseModel):
 
@@ -30,11 +42,21 @@ class LicencaUpdate(BaseModel):
     limite_computadores: Optional[int] = None
 
 
+# ==========================================================
+# RESPOSTA
+# ==========================================================
+
 class LicencaResponse(BaseModel):
 
     id: int
 
     cliente_id: int
+
+    # Nome da empresa do cliente
+    empresa: Optional[str] = None
+
+    # Nome do cliente
+    usuario: Optional[str] = None
 
     chave: str
 
@@ -42,11 +64,12 @@ class LicencaResponse(BaseModel):
 
     status: str
 
-    validade: Optional[date]
+    validade: Optional[date] = None
 
     limite_computadores: int
 
     criado_em: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True
+    )
