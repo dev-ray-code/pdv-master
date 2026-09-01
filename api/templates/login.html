@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>PDV Store Master - Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .caixa-login {
+            background: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .caixa-login h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .caixa-login input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .caixa-login button {
+            width: 100%;
+            padding: 10px;
+            background: #4361ee;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .caixa-login button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        #erro {
+            color: #e63946;
+            font-size: 13px;
+            margin-bottom: 10px;
+            min-height: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <form class="caixa-login" id="formLogin">
+        <h1>PDV Store Master</h1>
+        <div id="erro"></div>
+        <input type="text" id="usuario" placeholder="Usuário" autocomplete="username" required>
+        <input type="password" id="senha" placeholder="Senha" autocomplete="current-password" required>
+        <button type="submit" id="btnEntrar">Entrar</button>
+    </form>
+
+    <script>
+        var form = document.getElementById("formLogin");
+        var erroEl = document.getElementById("erro");
+        var btn = document.getElementById("btnEntrar");
+
+        form.addEventListener("submit", async function (evento) {
+            evento.preventDefault();
+            erroEl.textContent = "";
+            btn.disabled = true;
+            btn.textContent = "Entrando...";
+
+            var usuario = document.getElementById("usuario").value;
+            var senha = document.getElementById("senha").value;
+
+            try {
+                var resposta = await fetch("/admin/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ usuario: usuario, senha: senha })
+                });
+
+                var dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    erroEl.textContent = dados.detail || "Não foi possível entrar.";
+                    btn.disabled = false;
+                    btn.textContent = "Entrar";
+                    return;
+                }
+
+                localStorage.setItem("pdv_admin_token", dados.access_token);
+                window.location.href = "/dashboard";
+
+            } catch (e) {
+                erroEl.textContent = "Erro de conexão com o servidor. Tente novamente.";
+                btn.disabled = false;
+                btn.textContent = "Entrar";
+            }
+        });
+    </script>
+
+</body>
+</html>

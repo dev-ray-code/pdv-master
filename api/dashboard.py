@@ -1,8 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from api.admin_auth import verificar_admin_token
 
 router = APIRouter(
     prefix="/dashboard",
-    tags=["Dashboard"]
+    tags=["Dashboard"],
+    dependencies=[Depends(verificar_admin_token)]
 )
 
 @router.get("/")

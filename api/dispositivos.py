@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from database.db import get_db
+from api.admin_auth import verificar_admin_token
 
 from schemas.dispositivo import (
     DispositivoConectar,
@@ -14,7 +15,10 @@ from services.dispositivo_service import DispositivoService
 
 router = APIRouter(
     prefix="/dispositivos",
-    tags=["Dispositivos"]
+    tags=["Dispositivos"],
+    # O PDV cliente ativa dispositivos por /windows/ativar (ou /mobile/ativar),
+    # não por aqui. Estas rotas são só do painel admin.
+    dependencies=[Depends(verificar_admin_token)]
 )
 
 

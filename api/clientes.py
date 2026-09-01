@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from database.db import get_db
+from api.admin_auth import verificar_admin_token
 
 from schemas.cliente import (
     ClienteCreate,
@@ -15,7 +16,10 @@ from services.cliente_service import ClienteService
 
 router = APIRouter(
     prefix="/clientes",
-    tags=["Clientes"]
+    tags=["Clientes"],
+    # Todas as rotas deste arquivo são de uso exclusivo do painel admin,
+    # então exigimos o token de admin para o router inteiro.
+    dependencies=[Depends(verificar_admin_token)]
 )
 
 

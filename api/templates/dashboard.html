@@ -59,6 +59,7 @@ body{
 
 </style>
 
+    <script src="/static/auth.js"></script>
 </head>
 
 <body>
@@ -233,12 +234,12 @@ Bem-vindo ao Controle Store.
 
 async function carregarDashboard(){
 
-    const respostaClientes = await fetch("/licencas/clientes/listar");
+    const respostaClientes = await fetch("/clientes/");
     const clientes = await respostaClientes.json();
 
     document.getElementById("totalClientes").innerHTML = clientes.length;
 
-    const respostaLicencas = await fetch("/licencas/listar");
+    const respostaLicencas = await fetch("/licencas/");
     const licencas = await respostaLicencas.json();
 
     let ativas = 0;

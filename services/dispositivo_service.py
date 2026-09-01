@@ -85,8 +85,14 @@ class DispositivoService:
                 detail="Licença vencida."
             )
 
+        # IMPORTANTE: a busca abaixo é por machine_id **e** pela licença
+        # atual. Antes, era só por machine_id — isso fazia com que um PC
+        # reaproveitado (revendido, reformatado, reinstalado para outro
+        # cliente) continuasse "preso" contando vaga na licença antiga
+        # para sempre, mesmo já sendo usado por outra empresa.
         dispositivo = db.query(Dispositivo).filter(
-            Dispositivo.machine_id == dados.machine_id
+            Dispositivo.machine_id == dados.machine_id,
+            Dispositivo.licenca_id == licenca.id
         ).first()
 
         if dispositivo:
@@ -110,6 +116,19 @@ class DispositivoService:
                 "plano": licenca.plano,
                 "validade": licenca.validade,
             }
+
+        # Esse machine_id já existe, mas vinculado a OUTRA licença —
+        # sinal de que o PC foi reaproveitado para este cliente. Libera
+        # o registro antigo para não ocupar vaga de quem não usa mais
+        # aquele computador.
+        dispositivo_licenca_anterior = db.query(Dispositivo).filter(
+            Dispositivo.machine_id == dados.machine_id,
+            Dispositivo.licenca_id != licenca.id
+        ).first()
+
+        if dispositivo_licenca_anterior:
+            db.delete(dispositivo_licenca_anterior)
+            db.commit()
 
         quantidade = db.query(Dispositivo).filter(
             Dispositivo.licenca_id == licenca.id,

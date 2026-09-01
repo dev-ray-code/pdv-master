@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from database.db import get_db
+from api.admin_auth import verificar_admin_token
 
 from schemas.usuario import (
     UsuarioCreate,
@@ -15,7 +16,8 @@ from services.usuario_service import UsuarioService
 
 router = APIRouter(
     prefix="/usuarios",
-    tags=["Usuários"]
+    tags=["Usuários"],
+    dependencies=[Depends(verificar_admin_token)]
 )
 
 

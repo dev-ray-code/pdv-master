@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from database.db import criar_banco
 
 from api.licencas import router as licencas_router
+from api.licencas import router_admin as licencas_admin_router
 
 from api.clientes import router as clientes_router
 from api.dispositivos import router as dispositivos_router
@@ -13,6 +14,7 @@ from api.mobile import router as mobile_router
 from api.windows import router as windows_router
 from api.auth import router as auth_router
 from api.usuarios import router as usuarios_router
+from api.admin_auth import router as admin_auth_router
 
 app = FastAPI(
     title="PDV Store Server",
@@ -20,6 +22,7 @@ app = FastAPI(
 )
 
 app.include_router(licencas_router)
+app.include_router(licencas_admin_router)
 app.include_router(clientes_router)
 app.include_router(dispositivos_router)
 app.include_router(dashboard_router)
@@ -27,6 +30,7 @@ app.include_router(mobile_router)
 app.include_router(windows_router)
 app.include_router(auth_router)
 app.include_router(usuarios_router)
+app.include_router(admin_auth_router)
 
 templates = Jinja2Templates(directory="api/templates")
 
@@ -50,6 +54,15 @@ async def erro_global(request, exc):
         "Erro interno",
         status_code=500
     )
+
+@app.get("/login")
+async def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={"request": request}
+    )
+
 
 @app.get("/")
 async def inicio(request: Request):

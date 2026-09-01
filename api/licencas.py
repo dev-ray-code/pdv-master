@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Body, status
 from sqlalchemy.orm import Session
 
 from database.db import get_db
+from api.admin_auth import verificar_admin_token
 
 from schemas.licenca import (
     LicencaCreate,
@@ -15,17 +16,27 @@ from schemas.licenca import (
 from services.licenca_service import LicencaService
 
 
+# Router PÚBLICO: só a validação de licença, que é chamada pelo próprio
+# PDV instalado no cliente (não passa por login de admin).
 router = APIRouter(
     prefix="/licencas",
     tags=["Licenças"]
 )
 
+# Router PROTEGIDO: tudo que é gestão/CRUD de licenças, uso exclusivo
+# do painel admin.
+router_admin = APIRouter(
+    prefix="/licencas",
+    tags=["Licenças (admin)"],
+    dependencies=[Depends(verificar_admin_token)]
+)
+
 
 # ==========================================================
-# LISTAR LICENÇAS
+# LISTAR LICENÇAS (admin)
 # ==========================================================
 
-@router.get(
+@router_admin.get(
     "/",
     response_model=List[LicencaResponse]
 )
@@ -37,10 +48,10 @@ def listar(
 
 
 # ==========================================================
-# BUSCAR LICENÇA
+# BUSCAR LICENÇA (admin)
 # ==========================================================
 
-@router.get(
+@router_admin.get(
     "/{licenca_id}",
     response_model=LicencaResponse
 )
@@ -56,10 +67,10 @@ def buscar(
 
 
 # ==========================================================
-# CRIAR LICENÇA
+# CRIAR LICENÇA (admin)
 # ==========================================================
 
-@router.post(
+@router_admin.post(
     "/",
     status_code=status.HTTP_201_CREATED
 )
@@ -75,7 +86,7 @@ def criar(
 
 
 # ==========================================================
-# VALIDAR LICENÇA
+# VALIDAR LICENÇA (público — chamado pelo PDV do cliente)
 # ==========================================================
 
 @router.post("/validar")
@@ -100,10 +111,10 @@ def validar(
 
 
 # ==========================================================
-# ATUALIZAR LICENÇA
+# ATUALIZAR LICENÇA (admin)
 # ==========================================================
 
-@router.put(
+@router_admin.put(
     "/{licenca_id}",
     response_model=LicencaResponse
 )
@@ -121,10 +132,10 @@ def atualizar(
 
 
 # ==========================================================
-# EXCLUIR LICENÇA
+# EXCLUIR LICENÇA (admin)
 # ==========================================================
 
-@router.delete("/{licenca_id}")
+@router_admin.delete("/{licenca_id}")
 def excluir(
     licenca_id: int,
     db: Session = Depends(get_db)
