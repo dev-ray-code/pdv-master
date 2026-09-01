@@ -145,3 +145,21 @@ def excluir(
         db,
         licenca_id
     )
+
+
+# ==========================================================
+# REDEFINIR SENHA DO USUÁRIO DA LICENÇA (admin)
+# Gera uma nova senha aleatória para o cliente usar no PDV.
+# Retorna a nova senha em texto para o admin copiar e enviar.
+# ==========================================================
+
+@router_admin.post("/{licenca_id}/redefinir-senha")
+def redefinir_senha(
+    licenca_id: int,
+    db: Session = Depends(get_db)
+):
+
+    return LicencaService.redefinir_senha(
+        db,
+        licenca_id
+    )

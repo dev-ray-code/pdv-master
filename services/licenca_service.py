@@ -489,3 +489,57 @@ class LicencaService:
             "mensagem": "Licença removida."
 
         }
+
+    # ==========================================================
+    # REDEFINIR SENHA DO USUÁRIO DA LICENÇA
+    # Gera nova senha aleatória, atualiza o hash no banco e
+    # retorna a senha em texto para o admin copiar e enviar
+    # ao cliente. A senha anterior deixa de funcionar.
+    # ==========================================================
+
+    @staticmethod
+    def redefinir_senha(
+        db: Session,
+        licenca_id: int
+    ):
+
+        licenca = LicencaService.buscar(
+            db,
+            licenca_id
+        )
+
+        usuario = (
+            db.query(Usuario)
+            .filter(
+                Usuario.cliente_id == licenca.cliente_id
+            )
+            .first()
+        )
+
+        if not usuario:
+
+            raise HTTPException(
+                status_code=404,
+                detail="Nenhum usuário vinculado a esta licença."
+            )
+
+        nova_senha = LicencaService.gerar_senha()
+
+        usuario.senha_hash = gerar_hash(nova_senha)
+
+        db.commit()
+
+        return {
+
+            "status": "ok",
+
+            "usuario": usuario.usuario,
+
+            "nova_senha": nova_senha,
+
+            "mensagem": (
+                "Senha redefinida com sucesso. "
+                "Anote e envie ao cliente — ela não será exibida novamente."
+            )
+
+        }

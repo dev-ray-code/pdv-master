@@ -985,6 +985,19 @@ async function carregarLicencas(){
 
 
                     <button
+                    class="btn btn-sm btn-info text-white"
+                    onclick="redefinirSenha(${item.id}, '${item.usuario || ''}')"
+                    title="Gera nova senha para este cliente"
+                    >
+
+                    <i class="bi bi-key"></i>
+
+                    Nova Senha
+
+                    </button>
+
+
+                    <button
                     class="btn btn-sm btn-danger"
                     onclick="excluirLicenca(${item.id})"
                     >
@@ -1678,6 +1691,56 @@ async function excluirLicenca(id){
         alert(
             "Erro ao excluir licença."
         );
+
+    }
+
+}
+
+
+// ========================================================
+// REDEFINIR SENHA DO CLIENTE
+// ========================================================
+
+async function redefinirSenha(licencaId, usuarioAtual){
+
+    const confirmar = confirm(
+        "Isso vai gerar uma NOVA senha para o cliente \"" + (usuarioAtual || licencaId) + "\".\n\n" +
+        "A senha antiga vai parar de funcionar imediatamente.\n\n" +
+        "Continuar?"
+    );
+
+    if(!confirmar){ return; }
+
+    try{
+
+        const resposta = await fetch(
+            "/licencas/" + licencaId + "/redefinir-senha",
+            { method: "POST" }
+        );
+
+        const dados = await resposta.json();
+
+        if(!resposta.ok){
+            alert("❌ " + (dados.detail || "Erro ao redefinir senha."));
+            return;
+        }
+
+        // Mostra a nova senha num alert para o admin copiar
+        // (não tem como mostrar de forma mais bonita sem um modal
+        //  extra, mas este alert já permite copiar o texto)
+        const msg =
+            "✅ Senha redefinida com sucesso!\n\n" +
+            "Usuário:   " + dados.usuario + "\n" +
+            "Nova senha: " + dados.nova_senha + "\n\n" +
+            "⚠️ Copie agora e envie ao cliente.\n" +
+            "Esta senha não será exibida novamente.";
+
+        alert(msg);
+
+    } catch(erro){
+
+        console.error(erro);
+        alert("❌ Erro de conexão. Tente novamente.");
 
     }
 

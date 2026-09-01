@@ -299,19 +299,40 @@ async function cadastrarCliente(){
 
 async function excluirCliente(id){
 
-    if(!confirm("Excluir este cliente?")){
+    if(!confirm("Excluir este cliente? Todas as licenças e usuários vinculados também serão removidos.")){
 
         return;
 
     }
 
-    await fetch("/clientes/"+id,{
+    try {
 
-        method:"DELETE"
+        const resposta = await fetch("/clientes/"+id,{
+            method:"DELETE"
+        });
 
-    });
+        if(resposta.ok){
 
-    carregarClientes();
+            carregarClientes();
+
+        } else {
+
+            let mensagem = "Erro ao excluir cliente.";
+
+            try {
+                const dados = await resposta.json();
+                mensagem = dados.detail || mensagem;
+            } catch(e){}
+
+            alert("❌ " + mensagem);
+
+        }
+
+    } catch(e) {
+
+        alert("❌ Erro de conexão ao tentar excluir. Tente novamente.");
+
+    }
 
 }
 
