@@ -15,6 +15,7 @@ from api.windows import router as windows_router
 from api.auth import router as auth_router
 from api.usuarios import router as usuarios_router
 from api.admin_auth import router as admin_auth_router
+from api.atualizacao import router as atualizacao_router
 
 app = FastAPI(
     title="PDV Store Server",
@@ -31,6 +32,7 @@ app.include_router(windows_router)
 app.include_router(auth_router)
 app.include_router(usuarios_router)
 app.include_router(admin_auth_router)
+app.include_router(atualizacao_router)
 
 templates = Jinja2Templates(directory="api/templates")
 
